@@ -33,11 +33,36 @@ public class LinkedList {
 
         if (head == null) {
             tail = node;
-        }
-        else{
+        } else {
             node.nextNode = head;
         }
         head = node;
+    }
+
+    public void insertAt(int index, int data) {
+        //if the list is empty or data is to be added in the first index
+        if(head == null || index == 0){
+            insertAtStart(data);
+           return;
+        }
+        //finding the previous node
+        Node preNode = head;
+        int i = 1;
+        //(index) for previous node (not the current node)
+        while (preNode != null && i != index) {
+            preNode = preNode.nextNode;
+            i++;
+        }
+        if (preNode == null) {
+            System.out.println("no such index is in the list");
+            return;
+        } else if (preNode == tail)
+            this.insert(data);
+        else {
+            Node node = new Node(data);
+            node.nextNode = preNode.nextNode;
+            preNode.nextNode = node;
+        }
     }
 
     public void show() {
