@@ -9,10 +9,18 @@ public class LinkedList {
         this.tail = null;
     }
 
+    public Node getHead() {
+        return head;
+    }
+
+    public Node getTail() {
+        return tail;
+    }
+
     public void insert(int data) {
         Node node = new Node(data);
 
-        if (tail == null) {
+        if (head == null) {
             head = node;
         } else {
             tail.nextNode = node;
@@ -20,6 +28,17 @@ public class LinkedList {
         tail = node;
     }
 
+    public void insertAtStart(int data) {
+        Node node = new Node(data);
+
+        if (head == null) {
+            tail = node;
+        }
+        else{
+            node.nextNode = head;
+        }
+        head = node;
+    }
 
     public void show() {
         Node node = head;
@@ -28,6 +47,7 @@ public class LinkedList {
             node = node.nextNode;
         }
     }
+
 
     class Node {
         private int data;
