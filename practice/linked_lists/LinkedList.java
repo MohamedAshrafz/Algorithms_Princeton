@@ -68,7 +68,7 @@ public class LinkedList {
         //removing the head (index 0 node)
         if (index == 0) {
             if (head == null) {
-                System.out.println("Cannot delete, no nodes in the last");
+                System.out.println("Cannot delete, no nodes in the list");
             }
             if (head != null && head.nextNode != null) {
                 head = head.nextNode;
@@ -76,8 +76,7 @@ public class LinkedList {
                 head = null;
                 tail = null;
             }
-        }
-        else {
+        } else {
             //finding the previous node
             Node preNode = head;
             int i = 1;
@@ -85,8 +84,16 @@ public class LinkedList {
                 preNode = preNode.nextNode;
                 i++;
             }
+            //if no previous node return from the function (no previous node means no current node)
+            if (preNode == null){
+                System.out.println("No such index node to be deleted");
+                return;
+            }
 
-            if (preNode.nextNode == tail) {
+            if (preNode.nextNode == null) {
+                System.out.println("No such index node to be deleted");
+            } else if (preNode.nextNode == tail) {
+                tail = preNode; //need to change the tail node because we deleted the last node in the list
                 preNode.nextNode = null;
             } else {
                 //(preNode.nextNode) is the current node (preNode.nextNode.nextNode) is the the next node
@@ -96,9 +103,9 @@ public class LinkedList {
     }
 
     public void show() {
-        System.out.println("show method is invoked \nThe nodes are:");
+        System.out.println("============================\nshow method is invoked\nThe nodes are:");
         Node node = head;
-        if (node == null){
+        if (node == null) {
             System.out.println("No nodes yet");
         }
         while (node != null) {
