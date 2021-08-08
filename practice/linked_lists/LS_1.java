@@ -4,21 +4,21 @@ public class LS_1 {
     public static void main(String[] args) {
         LinkedList list = new LinkedList();
 
-        list.insertAtStart(5);
-        list.insertAt(0, 500);
-        list.insertAtStart(10);
-        list.insertAt(5, 600);
-        /*list.insertAtStart(20);
-        list.insert(12);
-        list.insert(15);
-        list.insert(50);
-        list.insertAt(4, 700);
-        list.insert(12);
-        list.insert(15);
-        list.insert(55);*/
-
-
-
+        list.insert(5);
+        list.insert(10);
         list.show();
+        list.delete(0);
+        list.show();
+        list.insert(50);
+        list.insert(60);
+        //list.insertAtStart(10);
+        list.show();
+        list.delete(2);
+        list.show();
+        list.delete(0);
+        list.show();
+        list.delete(0);
+        list.show();
+
     }
 }

@@ -41,13 +41,13 @@ public class LinkedList {
 
     public void insertAt(int index, int data) {
         //if the list is empty or data is to be added in the first index
-        if(head == null || index == 0){
+        if (head == null || index == 0) {
             insertAtStart(data);
-           return;
+            return;
         }
         //finding the previous node
         Node preNode = head;
-        int i = 1;
+        int i = 1; //the index starting from 1 (as we handled the index 0 already)
         //(index) for previous node (not the current node)
         while (preNode != null && i != index) {
             preNode = preNode.nextNode;
@@ -55,7 +55,6 @@ public class LinkedList {
         }
         if (preNode == null) {
             System.out.println("no such index is in the list");
-            return;
         } else if (preNode == tail)
             this.insert(data);
         else {
@@ -65,18 +64,55 @@ public class LinkedList {
         }
     }
 
+    public void delete(int index) {
+        //removing the head (index 0 node)
+        if (index == 0) {
+            if (head == null) {
+                System.out.println("Cannot delete, no nodes in the last");
+            }
+            if (head != null && head.nextNode != null) {
+                head = head.nextNode;
+            } else {
+                head = null;
+                tail = null;
+            }
+        }
+        else {
+            //finding the previous node
+            Node preNode = head;
+            int i = 1;
+            while (i < index && preNode != null) {
+                preNode = preNode.nextNode;
+                i++;
+            }
+
+            if (preNode.nextNode == tail) {
+                preNode.nextNode = null;
+            } else {
+                //(preNode.nextNode) is the current node (preNode.nextNode.nextNode) is the the next node
+                preNode.nextNode = preNode.nextNode.nextNode;
+            }
+        }
+    }
+
     public void show() {
+        System.out.println("show method is invoked \nThe nodes are:");
         Node node = head;
+        if (node == null){
+            System.out.println("No nodes yet");
+        }
         while (node != null) {
             System.out.println(node.data);
             node = node.nextNode;
         }
+        System.out.println("============================");
     }
 
 
     class Node {
         private int data;
         private Node nextNode;
+
 
         public Node(int data) {
             this.data = data;
