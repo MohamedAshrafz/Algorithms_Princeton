@@ -5,7 +5,6 @@
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.StdOut;
-
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
@@ -35,11 +34,11 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     public void addFirst(Item data) {
-        Node<Item> node = new Node<Item>();
-        node.data = data;
-
         if (data == null)
             throw new IllegalArgumentException("the data cannot be nulled");
+
+        Node<Item> node = new Node<Item>();
+        node.data = data;
 
         if (isEmpty()) {
             head = node;
@@ -54,11 +53,11 @@ public class Deque<Item> implements Iterable<Item> {
     }
 
     public void addLast(Item data) {
-        Node<Item> node = new Node<Item>();
-        node.data = data;
-
         if (data == null)
             throw new IllegalArgumentException("the data cannot be nulled");
+
+        Node<Item> node = new Node<Item>();
+        node.data = data;
 
         if (isEmpty()) {
             head = node;
