@@ -4,8 +4,12 @@
  *  Description:
  **************************************************************************** */
 
-import java.util.Iterator;
+import edu.princeton.cs.algs4.StdOut;
 
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+
+//support iterable interface (implements iterable method)
 public class Deque<Item> implements Iterable<Item> {
 
     private class Node<Item> {
@@ -68,76 +72,101 @@ public class Deque<Item> implements Iterable<Item> {
         size++;
     }
 
-    public void removeFirst() {
+    public Item removeFirst() {
         if (isEmpty())
             throw new java.util.NoSuchElementException("the Deque is empty");
 
+        Item item;
         if (size() == 1) {
+            item = head.data;
             head = tail = null;
         }
         else {
+            item = head.data;
             head = head.next;
             head.prev = null;
         }
         size--;
+        return item;
     }
 
-    public void removeLast() {
+    public Item removeLast() {
         if (isEmpty())
             throw new java.util.NoSuchElementException("the Deque is empty");
 
+        Item item;
         if (size() == 1) {
+            item = head.data;
             head = tail = null;
         }
         else {
+            item = tail.data;
             tail = tail.prev;
             tail.next = null;
         }
         size--;
+        return item;
     }
 
+    //iterator method returns iterator item (implements iterable interface)
     public Iterator<Item> iterator() {
         return new DequeIterator();
     }
 
-    class DequeIterator implements Iterator<Item> {
+    private class DequeIterator implements Iterator<Item> {
+        private Node<Item> current = head;
+
         public boolean hasNext() {
-            return false;
+            return current != null;
         }
 
         public Item next() {
-            return null;
-        }
-    }
+            if (!hasNext())
+                throw new NoSuchElementException("the Deque is empty");
 
-    public void show (){
-        Node node = head;
-        while (node != null){
-            System.out.println(node.data);
-            node = node.next;
+            Item item = current.data;
+            current = current.next;
+            return item;
+        }
+
+        public void remove() {
+            throw new UnsupportedOperationException("unsupporetted operation");
         }
     }
 
     public static void main(String[] args) {
-        Deque dq = new Deque<Integer>();
 
-        System.out.println(dq.size());
+        Deque<Integer> dq = new Deque<Integer>();
 
         dq.addLast(5);
         dq.addLast(10);
         dq.addLast(30);
 
-        dq.addFirst(5);
-        dq.addFirst(10);
-        dq.addFirst(30);
+        dq.addFirst(70);
+        dq.addFirst(60);
+        dq.addFirst(50);
 
-        dq.show();
+        for (Integer i : dq) {
+            StdOut.println(i);
+        }
+        StdOut.println();
+
         dq.removeFirst();
-        //dq.removeLast();
-        System.out.println("\n");
+        for (Integer i : dq) {
+            StdOut.println(i);
+        }
+        StdOut.println();
 
-        dq.show();
+        dq.removeLast();
+        for (Integer i : dq) {
+            StdOut.println(i);
+        }
+        StdOut.println();
+
+        StdOut.println(dq.size);
+
+        StdOut.println(dq.isEmpty());
+
     }
-
 }
 
