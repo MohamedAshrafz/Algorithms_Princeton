@@ -69,7 +69,6 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             throw new NoSuchElementException("the queue is empty");
 
         int randomIndex = StdRandom.uniform(0, noElem);
-
         return data[randomIndex];
     }
 
@@ -78,12 +77,18 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     }
 
     private class RQIterator implements Iterator<Item> {
-        private int i;
+        int i = 0;
+        Item[] copy;
 
         private RQIterator() {
-            if (isEmpty())
-                throw new NoSuchElementException("the queue is empty");
-            StdRandom.shuffle(data, 0, noElem);
+            if (!isEmpty()) {
+                copy = (Item[]) new Object[size()];
+
+                for (int i = 0; i < noElem; i++)
+                    copy[i] = data[i];
+
+                StdRandom.shuffle(copy);
+            }
         }
 
         public boolean hasNext() {
@@ -91,10 +96,10 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         }
 
         public Item next() {
-            if (i >= size())
+            if (!hasNext())
                 throw new NoSuchElementException("there is no more elements to be returned");
 
-            Item item = data[i++];
+            Item item = copy[i++];
             return item;
         }
 
@@ -119,12 +124,38 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         rq.enqueue("ss");
         rq.enqueue("bb");
-        // rq.enqueue("mm");
-        // rq.enqueue("qq");
-        // rq.enqueue("ii");
+        rq.enqueue("mm");
+        rq.enqueue("qq");
+        rq.enqueue("ii");
 
         for (String s : rq)
             StdOut.println(s);
+
+        StdOut.println();
+
+        rq.dequeue();
+
+        for (String s : rq)
+            StdOut.println(s);
+
+        StdOut.println();
+
+        StdOut.println(rq.sample());
+        StdOut.println(rq.sample());
+        StdOut.println(rq.sample());
+
+        StdOut.println();
+
+        for (String s : rq)
+            for (String ss : rq)
+                StdOut.println(ss);
+
+        StdOut.println();
+
+        StdOut.println(rq.isEmpty());
+        StdOut.println(rq.size());
+
+        rq.dequeue();
 
         StdOut.println();
 
@@ -132,34 +163,5 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             StdOut.println(s);
 
         StdOut.println();
-
-        for (String s : rq)
-            StdOut.println(s);
-
-        StdOut.println();
-
-        // StdOut.println(rq.sample());
-        // StdOut.println(rq.sample());
-        // StdOut.println(rq.sample());
-        //
-        // StdOut.println();
-        //
-        // for (String s : rq)
-        //     for (String ss : rq)
-        //         StdOut.println(s);
-        //
-        // StdOut.println();
-        //
-        // StdOut.println(rq.isEmpty());
-        // StdOut.println(rq.size());
-        //
-        // rq.dequeue();
-        //
-        // StdOut.println();
-        //
-        // for (String s : rq)
-        //     StdOut.println(s);
-        //
-        // StdOut.println();
     }
 }
