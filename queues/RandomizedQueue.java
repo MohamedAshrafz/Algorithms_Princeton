@@ -47,8 +47,6 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
             throw new java.util.NoSuchElementException("the queue is empty");
 
         int randomIndex = StdRandom.uniform(0, N);
-        while (data[randomIndex] == null)
-            randomIndex = StdRandom.uniform(0, N);
 
         //save the data to be returned
         Item item = data[randomIndex];
@@ -64,6 +62,14 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         return item;
     }
 
+    public Item sample(){
+        if (isEmpty())
+            throw new java.util.NoSuchElementException("the queue is empty");
+
+        int randomIndex = StdRandom.uniform(0, N);
+
+        return data[randomIndex];
+    }
 
     public Iterator<Item> iterator() {
         return new RQIterator();
@@ -93,13 +99,14 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         }
     }
 
-    public void resize(int newCapacity) {
+
+    private void resize(int newCapacity) {
 
         Item[] copy = (Item[]) new Object[newCapacity];
 
         for (int i = 0; i < N; i++)
             copy[i] = data[i];
-        data = null;
+
         data = copy;
     }
 
@@ -111,6 +118,17 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         rq.enqueue("mm");
         rq.enqueue("qq");
         rq.enqueue("ii");
+
+        for (String s : rq)
+            StdOut.println(s);
+
+        StdOut.println();
+
+        StdOut.println(rq.sample());
+        StdOut.println(rq.sample());
+        StdOut.println(rq.sample());
+
+        StdOut.println();
 
         for (String s : rq)
             StdOut.println(s);
