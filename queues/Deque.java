@@ -73,7 +73,7 @@ public class Deque<Item> implements Iterable<Item> {
 
     public Item removeFirst() {
         if (isEmpty())
-            throw new java.util.NoSuchElementException("the Deque is empty");
+            throw new NoSuchElementException("the Deque is empty");
 
         Item item;
         if (size() == 1) {
@@ -91,7 +91,7 @@ public class Deque<Item> implements Iterable<Item> {
 
     public Item removeLast() {
         if (isEmpty())
-            throw new java.util.NoSuchElementException("the Deque is empty");
+            throw new NoSuchElementException("the Deque is empty");
 
         Item item;
         if (size() == 1) {
@@ -138,33 +138,43 @@ public class Deque<Item> implements Iterable<Item> {
         Deque<Integer> dq = new Deque<Integer>();
 
         dq.addLast(5);
-        dq.addLast(10);
-        dq.addLast(30);
+        dq.removeFirst();
+
+        for (Integer i : dq) {
+            StdOut.println(i);
+        }
+        //dq.addLast(10);
+        //dq.addLast(30);
 
         dq.addFirst(70);
-        dq.addFirst(60);
-        dq.addFirst(50);
-
-        for (Integer i : dq) {
-            StdOut.println(i);
-        }
-        StdOut.println();
-
-        dq.removeFirst();
-        for (Integer i : dq) {
-            StdOut.println(i);
-        }
-        StdOut.println();
-
         dq.removeLast();
         for (Integer i : dq) {
             StdOut.println(i);
         }
-        StdOut.println();
 
-        StdOut.println(dq.size);
-
-        StdOut.println(dq.isEmpty());
+        // dq.addFirst(60);
+        // dq.addFirst(50);
+        //
+        // for (Integer i : dq) {
+        //     StdOut.println(i);
+        // }
+        // StdOut.println();
+        //
+        // dq.removeFirst();
+        // for (Integer i : dq) {
+        //     StdOut.println(i);
+        // }
+        // StdOut.println();
+        //
+        // dq.removeLast();
+        // for (Integer i : dq) {
+        //     StdOut.println(i);
+        // }
+        // StdOut.println();
+        //
+        // StdOut.println(dq.size);
+        //
+        // StdOut.println(dq.isEmpty());
 
     }
 }

@@ -6,12 +6,14 @@
 
 import edu.princeton.cs.algs4.StdOut;
 import edu.princeton.cs.algs4.StdRandom;
+
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public class RandomizedQueue<Item> implements Iterable<Item> {
 
     private Item[] data;
-    private int N;
+    private int noElem;
 
     public RandomizedQueue() {
 
@@ -22,7 +24,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
     }
 
     public int size() {
-        return N;
+        return noElem;
     }
 
 
@@ -32,41 +34,41 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         if (data == null) {
             data = (Item[]) new Object[1];
-            data[N++] = item;
+            data[noElem++] = item;
         }
         else {
-            if (N > 0 && N == data.length)
+            if (noElem > 0 && noElem == data.length)
                 resize(2 * data.length);
 
-            data[N++] = item;
+            data[noElem++] = item;
         }
     }
 
     public Item dequeue() {
         if (isEmpty())
-            throw new java.util.NoSuchElementException("the queue is empty");
+            throw new NoSuchElementException("the queue is empty");
 
-        int randomIndex = StdRandom.uniform(0, N);
+        int randomIndex = StdRandom.uniform(0, noElem);
 
         //save the data to be returned
         Item item = data[randomIndex];
         //replace the randomly chosen element with the last element in the array
-        data[randomIndex] = data[N - 1];
-        data[N - 1] = null;
-        N--;
+        data[randomIndex] = data[noElem - 1];
+        data[noElem - 1] = null;
+        noElem--;
 
         //resizing if N is equal to 1/4 the size of the array
-        if (N > 0 && N == (data.length / 4))
+        if (noElem > 0 && noElem == (data.length / 4))
             resize(data.length / 2);
 
         return item;
     }
 
-    public Item sample(){
+    public Item sample() {
         if (isEmpty())
-            throw new java.util.NoSuchElementException("the queue is empty");
+            throw new NoSuchElementException("the queue is empty");
 
-        int randomIndex = StdRandom.uniform(0, N);
+        int randomIndex = StdRandom.uniform(0, noElem);
 
         return data[randomIndex];
     }
@@ -79,16 +81,18 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
         private int i;
 
         private RQIterator() {
-            StdRandom.shuffle(data, 0, N - 1);
+            if (isEmpty())
+                throw new NoSuchElementException("the queue is empty");
+            StdRandom.shuffle(data, 0, noElem);
         }
 
         public boolean hasNext() {
-            return (i < N);
+            return (i < size() && !isEmpty());
         }
 
         public Item next() {
-            if (isEmpty())
-                throw new java.util.NoSuchElementException("the queue is empty");
+            if (i >= size())
+                throw new NoSuchElementException("there is no more elements to be returned");
 
             Item item = data[i++];
             return item;
@@ -104,7 +108,7 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         Item[] copy = (Item[]) new Object[newCapacity];
 
-        for (int i = 0; i < N; i++)
+        for (int i = 0; i < noElem; i++)
             copy[i] = data[i];
 
         data = copy;
@@ -115,18 +119,12 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         rq.enqueue("ss");
         rq.enqueue("bb");
-        rq.enqueue("mm");
-        rq.enqueue("qq");
-        rq.enqueue("ii");
+        // rq.enqueue("mm");
+        // rq.enqueue("qq");
+        // rq.enqueue("ii");
 
         for (String s : rq)
             StdOut.println(s);
-
-        StdOut.println();
-
-        StdOut.println(rq.sample());
-        StdOut.println(rq.sample());
-        StdOut.println(rq.sample());
 
         StdOut.println();
 
@@ -135,16 +133,33 @@ public class RandomizedQueue<Item> implements Iterable<Item> {
 
         StdOut.println();
 
-        StdOut.println(rq.isEmpty());
-        StdOut.println(rq.size());
-
-        rq.dequeue();
-
-        StdOut.println();
-
         for (String s : rq)
             StdOut.println(s);
 
         StdOut.println();
+
+        // StdOut.println(rq.sample());
+        // StdOut.println(rq.sample());
+        // StdOut.println(rq.sample());
+        //
+        // StdOut.println();
+        //
+        // for (String s : rq)
+        //     for (String ss : rq)
+        //         StdOut.println(s);
+        //
+        // StdOut.println();
+        //
+        // StdOut.println(rq.isEmpty());
+        // StdOut.println(rq.size());
+        //
+        // rq.dequeue();
+        //
+        // StdOut.println();
+        //
+        // for (String s : rq)
+        //     StdOut.println(s);
+        //
+        // StdOut.println();
     }
 }
