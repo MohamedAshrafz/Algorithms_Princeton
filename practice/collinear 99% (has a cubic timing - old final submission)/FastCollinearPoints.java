@@ -20,19 +20,26 @@ public class FastCollinearPoints {
     public FastCollinearPoints(Point[] points) {
 
         arrayListLS = new ArrayList<LineSegment>();
+        ArrayList<Point> startPionts = new ArrayList<Point>();
+        ArrayList<Point> endPoints = new ArrayList<Point>();
+        ArrayList<Double> slopes = new ArrayList<Double>();
 
         if (points == null)
             throw new IllegalArgumentException("the array connot be nulled");
 
-        //no nulled points are allowed
-        //no mutation is allowed to the original array
-        Point[] pointsCopy = new Point[points.length];
         for (int i = 0; i < points.length; i++) {
             if (points[i] == null)
                 throw new IllegalArgumentException("points connot be nulled");
-            else
-                pointsCopy[i] = points[i];
         }
+
+        //no mutation for the original points array
+        Point[] pointsCopy = new Point[points.length];
+        for (int i = 0; i < points.length; i++)
+            pointsCopy[i] = points[i];
+
+        Point[] pointsCopy2 = new Point[points.length];
+        for (int i = 0; i < points.length; i++)
+            pointsCopy2[i] = points[i];
 
         //sorting then making a copy for slopeOrder sorting
         Arrays.sort(pointsCopy);
@@ -41,44 +48,49 @@ public class FastCollinearPoints {
             if (pointsCopy[i].compareTo(pointsCopy[i + 1]) == 0)
                 throw new IllegalArgumentException("duplicated points are not allowed");
 
-
         for (int i = 0; i < pointsCopy.length - 1; i++) {
-            ArrayList<Point> startPionts = new ArrayList<Point>();
-            ArrayList<Point> endPoints = new ArrayList<Point>();
-
-            Arrays.sort(pointsCopy, pointsCopy[i].slopeOrder());
+            boolean flag = false;
+            Arrays.sort(pointsCopy, i + 1, pointsCopy.length, pointsCopy[i].slopeOrder());
 
             int noSuccessiveEqualSlopes = 0;
-            double prevSlope = pointsCopy[0].slopeTo(pointsCopy[1]);
-            Point startPoint = pointsCopy[1];
             int j;
-            for (j = 2; j < pointsCopy.length; j++) {
+            double tempSlope = pointsCopy[i].slopeTo(pointsCopy[i + 1]);
+            for (j = i + 2; j < pointsCopy.length; j++) {
 
-                if (pointsCopy[0].slopeTo(pointsCopy[j]) == prevSlope)
+                flag = false;
+
+                if (pointsCopy[i].slopeTo(pointsCopy[j]) == tempSlope) {
                     noSuccessiveEqualSlopes++;
-
-                else if (noSuccessiveEqualSlopes >= 2) {
-                    startPionts.add(startPoint);
-                    endPoints.add(pointsCopy[j - 1]);
-
-                    startPoint = pointsCopy[j];
-                    noSuccessiveEqualSlopes = 0;
-                    prevSlope = pointsCopy[0].slopeTo(pointsCopy[j]);
                 }
                 else {
-                    startPoint = pointsCopy[j];
+                    if (noSuccessiveEqualSlopes >= 2) {
+                        for (int x = i - 1; x >= 0; x--)
+                            if (pointsCopy[i].slopeTo(pointsCopy[x]) == tempSlope) {
+                                flag = true;
+                                break;
+                            }
+                    }
+                    //if the series broke and there is 3 equal slopes at least
+                    //there are more points to check
+                    if (noSuccessiveEqualSlopes >= 2 && !flag) {
+                        arrayListLS.add(new LineSegment(pointsCopy[i], pointsCopy[j - 1]));
+                    }
+                    //no successive equal slopes
                     noSuccessiveEqualSlopes = 0;
-                    prevSlope = pointsCopy[0].slopeTo(pointsCopy[j]);
+                    tempSlope = pointsCopy[i].slopeTo(pointsCopy[j]);
                 }
+
             }
             if (noSuccessiveEqualSlopes >= 2) {
-                startPionts.add(startPoint);
-                endPoints.add(pointsCopy[j - 1]);
+                for (int x = i - 1; x >= 0; x--)
+                    if (pointsCopy[i].slopeTo(pointsCopy[x]) == tempSlope) {
+                        flag = true;
+                        break;
+                    }
             }
-
-            for (int k = 0; k < startPionts.size(); k++) {
-                if (pointsCopy[0].compareTo(startPionts.get(k)) < 0)
-                    arrayListLS.add(new LineSegment(pointsCopy[0], endPoints.get(k)));
+            //all points checked and there is one series of successive equal slopes
+            if (noSuccessiveEqualSlopes >= 2 && !flag) {
+                arrayListLS.add(new LineSegment(pointsCopy[i], pointsCopy[j - 1]));
             }
             Arrays.sort(pointsCopy);
         }
