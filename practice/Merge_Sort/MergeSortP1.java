@@ -1,5 +1,7 @@
 package merge_sort;
 
+import java.util.Arrays;
+
 public class MergeSortP1 {
     private static boolean less(Comparable a, Comparable b) {
         return (a.compareTo(b) < 0);
@@ -29,7 +31,7 @@ public class MergeSortP1 {
             aux[k] = a[k];
 
         int i = lo, j = mid + 1;
-        for (int k = lo; k < hi; k++) {
+        for (int k = lo; k <= hi; k++) {
             if (i > mid)
                 a[k] = aux[j++];
             else if (j > hi)
@@ -44,6 +46,16 @@ public class MergeSortP1 {
 
     public static void main(String[] args) {
         System.out.println("hi there");
+        Integer[] arr = new Integer[1000000];
+
+        for (int i = 0; i<1000000; i++)
+            arr[i] = 1000000-i;
+
+        MergeSortP1.sort(arr);
+
+        for (Integer i: arr)
+            System.out.println(i);
+
     }
 
 }
