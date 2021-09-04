@@ -109,11 +109,12 @@ public class Board {
         if (this.getClass() != y.getClass())
             return false;
 
-        y = (Board)y;
-        if (this.toString().equals(y.toString()))
-            return true;
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                if (this.tiles[i][j] != ((Board) y).tiles[i][j])
+                    return false;
 
-        return false;
+        return true;
     }
 
     // all neighboring boards
@@ -244,16 +245,16 @@ public class Board {
         // for (Board x : i)
         //     StdOut.println(x.toString());
 
-         arr[0][0] = 1;
-         //arr[0][1] = 8;
-         Board b1 = new Board(arr);
+        //arr[0][0] = 1;
+        //arr[0][1] = 8;
+        Board b1 = new Board(arr);
         //
         // StdOut.println(b.toString());
         // StdOut.println(b.hamming());
         // StdOut.println(b.manhattan());
         // StdOut.println(b.isGoal());
         //
-         StdOut.println(b.equals(b1));
+        StdOut.println(b.equals(b1));
 
     }
 }
