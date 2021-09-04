@@ -34,10 +34,10 @@ public class Board {
 
         StringBuilder toStr = new StringBuilder(n + "\n");
 
-        for (int[] row : tiles) {
-            toStr.append(" ");
-            for (int element : row)
-                toStr.append(element + "  ");
+        for (int i = 0; i < n; i++) {
+            for (int j = 0; j < n; j++) {
+                toStr.append(String.format("%2d ", tiles[i][j]));
+            }
             toStr.append("\n");
         }
 
@@ -102,12 +102,18 @@ public class Board {
 
     // does this board equal y?
     public boolean equals(Object y) {
-        if (!(y instanceof Board))
+        if (y == null)
             return false;
         if (this == y)
             return true;
+        if (this.getClass() != y.getClass())
+            return false;
 
-        return this.toString().equals(y.toString());
+        y = (Board)y;
+        if (this.toString().equals(y.toString()))
+            return true;
+
+        return false;
     }
 
     // all neighboring boards
@@ -202,13 +208,13 @@ public class Board {
 
     // unit testing (not graded)
     public static void main(String[] args) {
-        int n = 2;
+        int n = 10;
         int[][] arr = new int[n][n];
 
-        // int x = 1;
-        // for (int i = 0; i < n; i++)
-        //     for (int j = 0; j < n; j++)
-        //         arr[i][j] = x++;
+        int x = 1;
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++)
+                arr[i][j] = x++;
 
         // arr[0][0] = 2;
         // arr[0][1] = 1;
@@ -220,10 +226,10 @@ public class Board {
         // arr[2][1] = 8;
         // arr[2][2] = 0;
 
-        arr[0][0] = 0;
-        arr[0][1] = 1;
-        arr[1][0] = 3;
-        arr[1][1] = 2;
+        // arr[0][0] = 0;
+        // arr[0][1] = 1;
+        // arr[1][0] = 3;
+        // arr[1][1] = 2;
 
         int[][] arr1 = new int[n][n];
 
@@ -233,21 +239,21 @@ public class Board {
         //StdOut.println(b.twin().toString());
 
 
-        Iterable<Board> i = b.neighbors();
+        //Iterable<Board> i = b.neighbors();
 
-        for (Board x : i)
-            StdOut.println(x.toString());
+        // for (Board x : i)
+        //     StdOut.println(x.toString());
 
-        // arr[0][0] = 1;
-        // arr[0][1] = 8;
-        // Board b1 = new Board(arr);
+         arr[0][0] = 1;
+         //arr[0][1] = 8;
+         Board b1 = new Board(arr);
         //
         // StdOut.println(b.toString());
         // StdOut.println(b.hamming());
         // StdOut.println(b.manhattan());
         // StdOut.println(b.isGoal());
         //
-        // StdOut.println(b.equals(b1));
+         StdOut.println(b.equals(b1));
 
     }
 }
