@@ -4,9 +4,11 @@
  *  Description:
  **************************************************************************** */
 
+import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.StdOut;
 
 import java.util.Iterator;
+import java.util.NoSuchElementException;
 
 public class Board {
 
@@ -100,6 +102,8 @@ public class Board {
 
     // does this board equal y?
     public boolean equals(Object y) {
+        if (!(y instanceof Board))
+            return false;
         if (this == y)
             return true;
 
@@ -114,81 +118,74 @@ public class Board {
 
     // a board that is obtained by exchanging any pair of tiles
     public Board twin() {
-        int [][] tilesCopy = new int[n][n];
+        int[][] tilesCopy = new int[n][n];
+
 
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++)
-                tilesCopy[i][j] = this.tiles[i][j];
-            exch(tilesCopy, );
+                tilesCopy[i][j] = tiles[i][j];
+
+
+        for (int i = 0; i < n; i++)
+            if (tilesCopy[i][0] != 0 && tilesCopy[i][1] != 0) {
+                exch(tilesCopy, i, 0, i, 1);
+                break;
+            }
+        return new Board(tilesCopy);
     }
 
     // internal iterator class
     private class neighborsIterator implements Iterator<Board> {
 
-        private int i_OfBlank, j_OfBlank;
-        private int neighborAddress;
-        private int copyTiles[][];
-        private boolean iplus = false, ineg = false, jplus = false, jneg = false;
+        private Queue<Board> boardQueue;
 
         public neighborsIterator() {
-            copyTiles = new int[n][n];
+            int tilesCopy[][];
+            int i_OfBlank = 0, j_OfBlank = 0;
+            tilesCopy = new int[n][n];
+            boardQueue = new Queue<Board>();
 
             for (int i = 0; i < n; i++)
                 for (int j = 0; j < n; j++) {
-                    copyTiles[i][j] = tiles[i][j];
-                    if (copyTiles[i][j] == 0) {
+                    tilesCopy[i][j] = tiles[i][j];
+                    if (tilesCopy[i][j] == 0) {
                         i_OfBlank = i;
                         j_OfBlank = j;
                     }
                 }
+
+            if (j_OfBlank - 1 >= 0) {
+                exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank, j_OfBlank - 1);
+                boardQueue.enqueue(new Board(tilesCopy));
+                exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank, j_OfBlank - 1);
+            }
+            if (i_OfBlank + 1 < n) {
+                exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank + 1, j_OfBlank);
+                boardQueue.enqueue(new Board(tilesCopy));
+                exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank + 1, j_OfBlank);
+            }
+            if (j_OfBlank + 1 < n) {
+                exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank, j_OfBlank + 1);
+                boardQueue.enqueue(new Board(tilesCopy));
+                exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank, j_OfBlank + 1);
+            }
+            if (i_OfBlank - 1 >= 0) {
+                exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank - 1, j_OfBlank);
+                boardQueue.enqueue(new Board(tilesCopy));
+                exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank - 1, j_OfBlank);
+            }
         }
 
         public boolean hasNext() {
-            if (!jneg && j_OfBlank - 1 >= 0) {
-                neighborAddress = 0;
-                return true;
-            }
-            if (!iplus && i_OfBlank + 1 < n) {
-                neighborAddress = 1;
-                return true;
-            }
-            if (!jplus && j_OfBlank + 1 < n) {
-                neighborAddress = 2;
-                return true;
-            }
-            if (!ineg && i_OfBlank - 1 >= 0) {
-                neighborAddress = 3;
-                return true;
-            }
-            return false;
+            if (boardQueue.isEmpty())
+                return false;
+            return true;
         }
 
         public Board next() {
-            int i_exch = i_OfBlank;
-            int j_exch = j_OfBlank;
-
-            if (neighborAddress == 0) {
-                j_exch--;
-                jneg = true;
-            }
-            else if (neighborAddress == 1) {
-                i_exch++;
-                iplus = true;
-            }
-            else if (neighborAddress == 2) {
-                j_exch++;
-                jplus = true;
-            }
-            else if (neighborAddress == 3) {
-                i_exch--;
-                ineg = true;
-            }
-
-            exch(copyTiles, i_OfBlank, j_OfBlank, i_exch, j_exch);
-            Board b = new Board(copyTiles);
-            exch(copyTiles, i_OfBlank, j_OfBlank, i_exch, j_exch);
-
-            return b;
+            if (!hasNext())
+                throw new NoSuchElementException("no more elements");
+            return boardQueue.dequeue();
         }
 
         public void remove() {
@@ -196,16 +193,16 @@ public class Board {
         }
     }
 
-        // helper exchange function
-        private void exch(int[][] a, int i1, int j1, int i2, int j2) {
-            int temp = a[i1][j1];
-            a[i1][j1] = a[i2][j2];
-            a[i2][j2] = temp;
-        }
+    // helper exchange function
+    private void exch(int[][] a, int i1, int j1, int i2, int j2) {
+        int temp = a[i1][j1];
+        a[i1][j1] = a[i2][j2];
+        a[i2][j2] = temp;
+    }
 
     // unit testing (not graded)
     public static void main(String[] args) {
-        int n = 3;
+        int n = 2;
         int[][] arr = new int[n][n];
 
         // int x = 1;
@@ -213,21 +210,28 @@ public class Board {
         //     for (int j = 0; j < n; j++)
         //         arr[i][j] = x++;
 
-        arr[0][0] = 8;
+        // arr[0][0] = 2;
+        // arr[0][1] = 1;
+        // arr[0][2] = 3;
+        // arr[1][0] = 4;
+        // arr[1][1] = 6;
+        // arr[1][2] = 5;
+        // arr[2][0] = 7;
+        // arr[2][1] = 8;
+        // arr[2][2] = 0;
+
+        arr[0][0] = 0;
         arr[0][1] = 1;
-        arr[0][2] = 0;
-        arr[1][0] = 4;
-        arr[1][1] = 3;
-        arr[1][2] = 2;
-        arr[2][0] = 7;
-        arr[2][1] = 5;
-        arr[2][2] = 6;
+        arr[1][0] = 3;
+        arr[1][1] = 2;
 
         int[][] arr1 = new int[n][n];
 
 
         Board b = new Board(arr);
         StdOut.println(b.toString());
+        //StdOut.println(b.twin().toString());
+
 
         Iterable<Board> i = b.neighbors();
 
