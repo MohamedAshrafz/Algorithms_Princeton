@@ -120,6 +120,8 @@ public class Board {
             return true;
         if (this.getClass() != y.getClass())
             return false;
+        if (this.dimension() != ((Board)y).dimension())
+            return false;
 
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++)

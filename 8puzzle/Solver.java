@@ -18,14 +18,19 @@ public class Solver {
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
+        if (initial == null)
+            throw new IllegalArgumentException("board can not be nulled");
+
         MinPQ<SearchNode> searchNodeMinPQ = new MinPQ<SearchNode>(manhattanOrder());
         SearchNode currentSearchNode = new SearchNode(initial, null, 0);
         searchNodeMinPQ.insert(currentSearchNode);
 
         searchNodeMinPQ.delMin();
         boolean checkThePreBoard = false;
-        do {
+        while (!currentSearchNode.board.isGoal()){
             for (Board neighbor : currentSearchNode.board.neighbors()) {
+                // if it is not the first loop compare between neighbors boards and
+                // the previous board to eliminate duplications
                 if (checkThePreBoard) {
                     if (!neighbor.equals(currentSearchNode.parentNode.board)) {
                         SearchNode node = new SearchNode(neighbor, currentSearchNode,
@@ -39,11 +44,9 @@ public class Solver {
                     searchNodeMinPQ.insert(node);
                 }
             }
-            currentSearchNode = null;
             currentSearchNode = searchNodeMinPQ.delMin();
             checkThePreBoard = true;
-        } while (!currentSearchNode.board.isGoal() &&
-                 !(currentSearchNode.board).equals(currentSearchNode.board.twin()));
+        }
 
         goalNode = currentSearchNode;
     }
@@ -66,7 +69,7 @@ public class Solver {
             return null;
     }
 
-    class goalSolution implements Iterator<Board> {
+    private class goalSolution implements Iterator<Board> {
 
         private Stack<SearchNode> stacksSolnNodes = new Stack<SearchNode>();
 
