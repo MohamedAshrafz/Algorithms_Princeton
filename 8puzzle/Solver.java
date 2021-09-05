@@ -15,6 +15,7 @@ import java.util.Iterator;
 public class Solver {
 
     private SearchNode goalNode;
+    private boolean solvable;
 
     // find a solution to the initial board (using the A* algorithm)
     public Solver(Board initial) {
@@ -25,9 +26,19 @@ public class Solver {
         SearchNode currentSearchNode = new SearchNode(initial, null, 0);
         searchNodeMinPQ.insert(currentSearchNode);
 
+        MinPQ<SearchNode> unsolvableSearchNodeMinPQ = new MinPQ<SearchNode>(manhattanOrder());
+        SearchNode unsolvableCurrentSearchNode = new SearchNode(initial.twin(), null, 0);
+        unsolvableSearchNodeMinPQ.insert(unsolvableCurrentSearchNode);
+
         searchNodeMinPQ.delMin();
+        unsolvableSearchNodeMinPQ.delMin();
         boolean checkThePreBoard = false;
-        while (!currentSearchNode.board.isGoal()){
+        solvable = true;
+
+        // if the board is solved already do not enter the while loop
+        while (!currentSearchNode.board.isGoal()
+                && !unsolvableCurrentSearchNode.board.isGoal()) {
+            solvable = true;
             for (Board neighbor : currentSearchNode.board.neighbors()) {
                 // if it is not the first loop compare between neighbors boards and
                 // the previous board to eliminate duplications
@@ -45,19 +56,44 @@ public class Solver {
                 }
             }
             currentSearchNode = searchNodeMinPQ.delMin();
+
+            if (currentSearchNode.board.isGoal())
+                break;
+
+            solvable = false;
+            // second A* algorithm in the twin board
+            // to determine if the board is unsolvable
+            for (Board neighbor : unsolvableCurrentSearchNode.board.neighbors()) {
+                // if it is not the first loop compare between neighbors boards and
+                // the previous board to eliminate duplications
+                if (checkThePreBoard) {
+                    if (!neighbor.equals(unsolvableCurrentSearchNode.parentNode.board)) {
+                        SearchNode node = new SearchNode(neighbor, unsolvableCurrentSearchNode,
+                                                         unsolvableCurrentSearchNode.moves + 1);
+                        unsolvableSearchNodeMinPQ.insert(node);
+                    }
+                }
+                else {
+                    SearchNode node = new SearchNode(neighbor, unsolvableCurrentSearchNode,
+                                                     unsolvableCurrentSearchNode.moves + 1);
+                    unsolvableSearchNodeMinPQ.insert(node);
+                }
+            }
+            unsolvableCurrentSearchNode = unsolvableSearchNodeMinPQ.delMin();
             checkThePreBoard = true;
         }
-
         goalNode = currentSearchNode;
     }
 
     // is the initial board solvable? (see below)
     public boolean isSolvable() {
-        return true;
+        return solvable;
     }
 
     // min number of moves to solve initial board; -1 if unsolvable
     public int moves() {
+        if (!isSolvable())
+            return -1;
         return goalNode.moves;
     }
 
@@ -104,7 +140,6 @@ public class Solver {
         private int moves;
         private int priorityH;
         private int priorityM;
-
 
         private SearchNode(Board board, SearchNode parentNode, int moves) {
             this.board = board;
