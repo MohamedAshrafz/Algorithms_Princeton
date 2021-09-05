@@ -13,7 +13,9 @@ import java.util.NoSuchElementException;
 public class Board {
 
     private final int n;
-    private int[][] tiles;
+    private final int[][] tiles;
+    private int hammingNum = -1;
+    private int manhattanSum = -1;
 
     // create a board from an n-by-n array of tiles,
     // where tiles[row][col] = tile at (row, col)
@@ -51,8 +53,13 @@ public class Board {
 
     // number of tiles out of place
     public int hamming() {
-        int hammingNum = 0;
+        // is it the first time to call this function YES OR NO ?
+        // NO .. return the value stored
+        if (hammingNum != -1)
+            return hammingNum;
 
+        //YES .. calculate the hammingNum, store and return it
+        hammingNum = 0;
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++) {
                 if (tiles[i][j] != ((j + 1) + i * n) && tiles[i][j] != 0)
@@ -63,9 +70,14 @@ public class Board {
 
     // sum of Manhattan distances between tiles and goal
     public int manhattan() {
-        int manhattanSum = 0;
+        // is it the first time to call this function YES OR NO ?
+        // NO .. return the value stored
+        if (manhattanSum != -1)
+            return manhattanSum;
 
+        //YES .. calculate the manhattanSum, store and return it
         int tempVal, trueI, trueJ;
+        manhattanSum = 0;
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++) {
 
@@ -127,11 +139,9 @@ public class Board {
     public Board twin() {
         int[][] tilesCopy = new int[n][n];
 
-
         for (int i = 0; i < n; i++)
             for (int j = 0; j < n; j++)
                 tilesCopy[i][j] = tiles[i][j];
-
 
         for (int i = 0; i < n; i++)
             if (tilesCopy[i][0] != 0 && tilesCopy[i][1] != 0) {
@@ -209,23 +219,23 @@ public class Board {
 
     // unit testing (not graded)
     public static void main(String[] args) {
-        int n = 10;
+        int n = 3;
         int[][] arr = new int[n][n];
 
-        int x = 1;
-        for (int i = 0; i < n; i++)
-            for (int j = 0; j < n; j++)
-                arr[i][j] = x++;
+        // int x = 1;
+        // for (int i = 0; i < n; i++)
+        //     for (int j = 0; j < n; j++)
+        //         arr[i][j] = x++;
 
-        // arr[0][0] = 2;
-        // arr[0][1] = 1;
-        // arr[0][2] = 3;
-        // arr[1][0] = 4;
-        // arr[1][1] = 6;
-        // arr[1][2] = 5;
-        // arr[2][0] = 7;
-        // arr[2][1] = 8;
-        // arr[2][2] = 0;
+        arr[0][0] = 2;
+        arr[0][1] = 1;
+        arr[0][2] = 4;
+        arr[1][0] = 3;
+        arr[1][1] = 5;
+        arr[1][2] = 6;
+        arr[2][0] = 7;
+        arr[2][1] = 8;
+        arr[2][2] = 0;
 
         // arr[0][0] = 0;
         // arr[0][1] = 1;
@@ -250,9 +260,11 @@ public class Board {
         Board b1 = new Board(arr);
         //
         // StdOut.println(b.toString());
-        // StdOut.println(b.hamming());
-        // StdOut.println(b.manhattan());
-        // StdOut.println(b.isGoal());
+         StdOut.println(b.hamming());
+         StdOut.println(b.manhattan());
+        StdOut.println(b.hamming());
+        StdOut.println(b.manhattan());
+         StdOut.println(b.isGoal());
         //
         StdOut.println(b.equals(b1));
 
