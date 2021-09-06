@@ -10,11 +10,10 @@ import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdOut;
 
 import java.util.Comparator;
-import java.util.Iterator;
 
 public class Solver {
 
-    private SearchNode goalNode;
+    private final SearchNode goalNode;
     private boolean solvable;
 
     // find a solution to the initial board (using the A* algorithm)
@@ -99,47 +98,30 @@ public class Solver {
 
     // sequence of boards in a shortest solution; null if unsolvable
     public Iterable<Board> solution() {
-        if (isSolvable())
-            return goalSolution::new;
+        if (isSolvable()) {
+            final Stack<Board> stacksSolnBoards = new Stack<Board>();
+
+            SearchNode chainingNode = goalNode;
+
+            while (chainingNode.parentNode != null) {
+                stacksSolnBoards.push(chainingNode.board);
+                chainingNode = chainingNode.parentNode;
+            }
+            stacksSolnBoards.push(chainingNode.board);
+
+            return stacksSolnBoards;
+        }
         else
             return null;
     }
 
-    private class goalSolution implements Iterator<Board> {
-
-        private Stack<SearchNode> stacksSolnNodes = new Stack<SearchNode>();
-
-        public goalSolution() {
-            SearchNode chainingNode = goalNode;
-
-            stacksSolnNodes.push(chainingNode);
-
-            while (chainingNode.parentNode != null) {
-                chainingNode = chainingNode.parentNode;
-                stacksSolnNodes.push(chainingNode);
-            }
-        }
-
-        public boolean hasNext() {
-            return !(stacksSolnNodes.isEmpty());
-        }
-
-        public Board next() {
-            return stacksSolnNodes.pop().board;
-        }
-
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
-    }
-
 
     private class SearchNode {
-        private Board board;
-        private SearchNode parentNode;
-        private int moves;
-        private int priorityH;
-        private int priorityM;
+        private final  Board board;
+        private final SearchNode parentNode;
+        private final int moves;
+        private final int priorityH;
+        private final int priorityM;
 
         private SearchNode(Board board, SearchNode parentNode, int moves) {
             this.board = board;

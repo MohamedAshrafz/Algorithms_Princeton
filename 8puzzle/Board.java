@@ -7,9 +7,6 @@
 import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.StdOut;
 
-import java.util.Iterator;
-import java.util.NoSuchElementException;
-
 public class Board {
 
     private final int n;
@@ -133,8 +130,45 @@ public class Board {
 
     // all neighboring boards
     public Iterable<Board> neighbors() {
-        return neighborsIterator::new;
-        // return () -> new neighborsIterator();
+
+        Queue<Board> boardQueue;
+
+        int tilesCopy[][];
+        int i_OfBlank = 0, j_OfBlank = 0;
+        tilesCopy = new int[n][n];
+        boardQueue = new Queue<Board>();
+
+        for (int i = 0; i < n; i++)
+            for (int j = 0; j < n; j++) {
+                tilesCopy[i][j] = tiles[i][j];
+                if (tilesCopy[i][j] == 0) {
+                    i_OfBlank = i;
+                    j_OfBlank = j;
+                }
+            }
+
+        if (j_OfBlank - 1 >= 0) {
+            exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank, j_OfBlank - 1);
+            boardQueue.enqueue(new Board(tilesCopy));
+            exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank, j_OfBlank - 1);
+        }
+        if (i_OfBlank + 1 < n) {
+            exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank + 1, j_OfBlank);
+            boardQueue.enqueue(new Board(tilesCopy));
+            exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank + 1, j_OfBlank);
+        }
+        if (j_OfBlank + 1 < n) {
+            exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank, j_OfBlank + 1);
+            boardQueue.enqueue(new Board(tilesCopy));
+            exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank, j_OfBlank + 1);
+        }
+        if (i_OfBlank - 1 >= 0) {
+            exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank - 1, j_OfBlank);
+            boardQueue.enqueue(new Board(tilesCopy));
+            exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank - 1, j_OfBlank);
+        }
+
+        return boardQueue;
     }
 
     // a board that is obtained by exchanging any pair of tiles
@@ -151,65 +185,6 @@ public class Board {
                 break;
             }
         return new Board(tilesCopy);
-    }
-
-    // internal iterator class
-    private class neighborsIterator implements Iterator<Board> {
-
-        private Queue<Board> boardQueue;
-
-        public neighborsIterator() {
-            int tilesCopy[][];
-            int i_OfBlank = 0, j_OfBlank = 0;
-            tilesCopy = new int[n][n];
-            boardQueue = new Queue<Board>();
-
-            for (int i = 0; i < n; i++)
-                for (int j = 0; j < n; j++) {
-                    tilesCopy[i][j] = tiles[i][j];
-                    if (tilesCopy[i][j] == 0) {
-                        i_OfBlank = i;
-                        j_OfBlank = j;
-                    }
-                }
-
-            if (j_OfBlank - 1 >= 0) {
-                exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank, j_OfBlank - 1);
-                boardQueue.enqueue(new Board(tilesCopy));
-                exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank, j_OfBlank - 1);
-            }
-            if (i_OfBlank + 1 < n) {
-                exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank + 1, j_OfBlank);
-                boardQueue.enqueue(new Board(tilesCopy));
-                exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank + 1, j_OfBlank);
-            }
-            if (j_OfBlank + 1 < n) {
-                exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank, j_OfBlank + 1);
-                boardQueue.enqueue(new Board(tilesCopy));
-                exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank, j_OfBlank + 1);
-            }
-            if (i_OfBlank - 1 >= 0) {
-                exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank - 1, j_OfBlank);
-                boardQueue.enqueue(new Board(tilesCopy));
-                exch(tilesCopy, i_OfBlank, j_OfBlank, i_OfBlank - 1, j_OfBlank);
-            }
-        }
-
-        public boolean hasNext() {
-            if (boardQueue.isEmpty())
-                return false;
-            return true;
-        }
-
-        public Board next() {
-            if (!hasNext())
-                throw new NoSuchElementException("no more elements");
-            return boardQueue.dequeue();
-        }
-
-        public void remove() {
-            throw new UnsupportedOperationException();
-        }
     }
 
     // helper exchange function
