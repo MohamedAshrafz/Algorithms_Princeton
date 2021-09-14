@@ -9,6 +9,7 @@ import edu.princeton.cs.algs4.Point2D;
 import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.StdDraw;
+import edu.princeton.cs.algs4.StdOut;
 
 public class KdTree {
     private Node root;
@@ -16,6 +17,8 @@ public class KdTree {
 
     private static final boolean VERTICAL = false;
     private static final boolean HORIZONTAL = true;
+    private static final boolean LIFTBOTTOM = false;
+    private static final boolean RIGHTTOP = true;
 
     private static class Node {
         private Point2D point;
@@ -201,25 +204,78 @@ public class KdTree {
         return point2DQueue;
     }
 
+    private double shortestDisSq = Double.POSITIVE_INFINITY;
+
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
-        return nearest(root, p);
+        Point2D nearestPiont = new Point2D(0, 0);
+        shortestDisSq = Double.POSITIVE_INFINITY;
+        return nearest(root, p, VERTICAL, LIFTBOTTOM, nearestPiont);
     }
 
-    private Point2D nearest(Node node, Point2D point){
-        return new Point2D(0, 0);
+    private Point2D nearest(Node node, Point2D point, boolean orientation, boolean lvl,
+                            Point2D nearestPiont) {
+        if (node == null)
+            return nearestPiont;
+
+        if (orientation == VERTICAL && lvl == RIGHTTOP) {
+            if (shortestDisSq <= point.distanceSquaredTo(new Point2D(node.point.x(), point.y())))
+                return nearestPiont;
+        }
+        else if (orientation == HORIZONTAL && lvl == RIGHTTOP) {
+            if (shortestDisSq <= point.distanceSquaredTo(new Point2D(point.x(), node.point.y())))
+                return nearestPiont;
+        }
+
+        double disSq = point.distanceSquaredTo(node.point);
+        if (disSq < shortestDisSq) {
+            shortestDisSq = disSq;
+            nearestPiont = node.point;
+        }
+        if (orientation == VERTICAL) {
+            if (point.y() <= node.point.y()) {
+                nearestPiont = nearest(node.left_bottom, point, HORIZONTAL, LIFTBOTTOM,
+                                       nearestPiont);
+                nearestPiont = nearest(node.right_top, point, HORIZONTAL, RIGHTTOP,
+                                       nearestPiont);
+            }
+            else {
+                nearestPiont = nearest(node.right_top, point, HORIZONTAL, RIGHTTOP,
+                                       nearestPiont);
+                nearestPiont = nearest(node.left_bottom, point, HORIZONTAL, LIFTBOTTOM,
+                                       nearestPiont);
+            }
+        }
+        else {
+            if (point.x() <= node.point.x()) {
+                nearestPiont = nearest(node.left_bottom, point, VERTICAL, LIFTBOTTOM,
+                                       nearestPiont);
+                nearestPiont = nearest(node.right_top, point, VERTICAL, RIGHTTOP,
+                                       nearestPiont);
+            }
+            else {
+                nearestPiont = nearest(node.right_top, point, VERTICAL, RIGHTTOP,
+                                       nearestPiont);
+                nearestPiont = nearest(node.left_bottom, point, VERTICAL, LIFTBOTTOM,
+                                       nearestPiont);
+            }
+        }
+        return nearestPiont;
     }
 
     public static void main(String[] args) {
         String filename = args[0];
         In in = new In(filename);
+        PointSET brute = new PointSET();
         KdTree kdtree = new KdTree();
         while (!in.isEmpty()) {
             double x = in.readDouble();
             double y = in.readDouble();
             Point2D p = new Point2D(x, y);
             kdtree.insert(p);
+            brute.insert(p);
         }
-        kdtree.draw();
+        StdOut.println(brute.nearest(new Point2D(1, 1)));
+        StdOut.println(kdtree.nearest(new Point2D(1, 1)));
     }
 }
