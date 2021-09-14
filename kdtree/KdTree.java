@@ -6,8 +6,8 @@
 
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Point2D;
+import edu.princeton.cs.algs4.Queue;
 import edu.princeton.cs.algs4.RectHV;
-import edu.princeton.cs.algs4.Stack;
 import edu.princeton.cs.algs4.StdDraw;
 
 public class KdTree {
@@ -127,7 +127,6 @@ public class KdTree {
         draw(root, VERTICAL, 0, 0, 1, 1);
     }
 
-
     private void draw(Node node, boolean orientation,
                       double limitMinX, double limitMinY, double limitMaxX, double limitMaxY) {
         if (node == null)
@@ -162,11 +161,52 @@ public class KdTree {
 
     // all points that are inside the rectangle (or on the boundary)
     public Iterable<Point2D> range(RectHV rect) {
-        return new Stack<>();
+        Queue<Point2D> point2DQueue = new Queue<Point2D>();
+        point2DQueue = range(root, rect, VERTICAL, point2DQueue);
+        return point2DQueue;
+    }
+
+    private Queue<Point2D> range(Node node, RectHV rect, boolean orientation,
+                                 Queue<Point2D> point2DQueue) {
+        if (node == null)
+            return point2DQueue;
+
+        double nodeX = node.point.x();
+        double nodeY = node.point.y();
+
+        if (nodeX >= rect.xmin() && nodeX <= rect.xmax()
+                && nodeY >= rect.ymin() && nodeY <= rect.ymax())
+            point2DQueue.enqueue(node.point);
+
+        if (orientation == VERTICAL) {
+            if (nodeX >= rect.xmin() && nodeX <= rect.xmax()) {
+                range(node.left_bottom, rect, HORIZONTAL, point2DQueue);
+                range(node.right_top, rect, HORIZONTAL, point2DQueue);
+            }
+            else if (nodeX > rect.xmax())
+                range(node.left_bottom, rect, HORIZONTAL, point2DQueue);
+            else if (nodeX < rect.xmin())
+                range(node.right_top, rect, HORIZONTAL, point2DQueue);
+        }
+        else {
+            if (nodeY >= rect.ymin() && nodeY <= rect.ymax()) {
+                range(node.left_bottom, rect, VERTICAL, point2DQueue);
+                range(node.right_top, rect, VERTICAL, point2DQueue);
+            }
+            else if (nodeY > rect.ymax())
+                range(node.left_bottom, rect, VERTICAL, point2DQueue);
+            else if (nodeY < rect.ymin())
+                range(node.right_top, rect, VERTICAL, point2DQueue);
+        }
+        return point2DQueue;
     }
 
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
+        return nearest(root, p);
+    }
+
+    private Point2D nearest(Node node, Point2D point){
         return new Point2D(0, 0);
     }
 
