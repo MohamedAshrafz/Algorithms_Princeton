@@ -17,8 +17,6 @@ public class KdTree {
 
     private static final boolean VERTICAL = false;
     private static final boolean HORIZONTAL = true;
-    private static final boolean LIFTBOTTOM = false;
-    private static final boolean RIGHTTOP = true;
 
     private static class Node {
         private Point2D point;
@@ -32,7 +30,6 @@ public class KdTree {
 
     // construct an empty set of points
     public KdTree() {
-
     }
 
     // is the set empty?
@@ -64,22 +61,20 @@ public class KdTree {
 
         if (cmpX == 0 && cmpY == 0)
             return node;
+
         if (orientation == VERTICAL) {
             if (cmpX < 0)
                 node.left_bottom = insert(node.left_bottom, p, HORIZONTAL);
             else
                 node.right_top = insert(node.right_top, p, HORIZONTAL);
-
-            return node;
         }
         else {
             if (cmpY < 0)
                 node.left_bottom = insert(node.left_bottom, p, VERTICAL);
             else
                 node.right_top = insert(node.right_top, p, VERTICAL);
-
-            return node;
         }
+        return node;
     }
 
     // does the set contain point p?
@@ -104,20 +99,16 @@ public class KdTree {
             return true;
 
         if (orientation == VERTICAL) {
-            if (cmpX < 0) {
+            if (cmpX < 0)
                 return contains(node.left_bottom, p, HORIZONTAL);
-            }
-            else {
+            else
                 return contains(node.right_top, p, HORIZONTAL);
-            }
         }
         else {
-            if (cmpY < 0) {
+            if (cmpY < 0)
                 return contains(node.left_bottom, p, VERTICAL);
-            }
-            else {
+            else
                 return contains(node.right_top, p, VERTICAL);
-            }
         }
     }
 
@@ -144,16 +135,21 @@ public class KdTree {
             StdDraw.setPenRadius();
             StdDraw.line(nodeX, limitMinY, nodeX, limitMaxY);
 
+            // cut the borders of the point range
+            // upper node
             draw(node.left_bottom, HORIZONTAL, limitMinX, limitMinY, nodeX, limitMaxY);
+            // lower node
             draw(node.right_top, HORIZONTAL, nodeX, limitMinY, limitMaxX, limitMaxY);
         }
         else {
-
             StdDraw.setPenColor(StdDraw.BLUE);
             StdDraw.setPenRadius();
             StdDraw.line(limitMinX, nodeY, limitMaxX, nodeY);
 
+            // cut the borders of the point range
+            // upper node
             draw(node.left_bottom, VERTICAL, limitMinX, limitMinY, limitMaxX, nodeY);
+            // lower node
             draw(node.right_top, VERTICAL, limitMinX, nodeY, limitMaxX, limitMaxY);
         }
     }
@@ -164,8 +160,7 @@ public class KdTree {
             throw new IllegalArgumentException("the rectangle can not be nulled");
 
         Queue<Point2D> point2DQueue = new Queue<Point2D>();
-        point2DQueue = range(root, rect, VERTICAL, point2DQueue);
-        return point2DQueue;
+        return range(root, rect, VERTICAL, point2DQueue);
     }
 
     private Queue<Point2D> range(Node node, RectHV rect, boolean orientation,
@@ -175,28 +170,35 @@ public class KdTree {
 
         double nodeX = node.point.x();
         double nodeY = node.point.y();
-
+        // the point is in the rectangle?
+        // Y -> add it to the queue
         if (nodeX >= rect.xmin() && nodeX <= rect.xmax()
                 && nodeY >= rect.ymin() && nodeY <= rect.ymax())
             point2DQueue.enqueue(node.point);
 
         if (orientation == VERTICAL) {
+            // the rectangle cuts the node border
             if (nodeX >= rect.xmin() && nodeX <= rect.xmax()) {
                 range(node.left_bottom, rect, HORIZONTAL, point2DQueue);
                 range(node.right_top, rect, HORIZONTAL, point2DQueue);
             }
+            // the rectangle is in the left subtree
             else if (nodeX > rect.xmax())
                 range(node.left_bottom, rect, HORIZONTAL, point2DQueue);
+                // the rectangle is in the right subtree
             else if (nodeX < rect.xmin())
                 range(node.right_top, rect, HORIZONTAL, point2DQueue);
         }
         else {
+            // the rectangle cuts the node border
             if (nodeY >= rect.ymin() && nodeY <= rect.ymax()) {
                 range(node.left_bottom, rect, VERTICAL, point2DQueue);
                 range(node.right_top, rect, VERTICAL, point2DQueue);
             }
+            // the rectangle is in the lower subtree
             else if (nodeY > rect.ymax())
                 range(node.left_bottom, rect, VERTICAL, point2DQueue);
+                // the rectangle is in the upper subtree
             else if (nodeY < rect.ymin())
                 range(node.right_top, rect, VERTICAL, point2DQueue);
         }
@@ -215,50 +217,68 @@ public class KdTree {
         if (node == null)
             return nearestPoint;
 
+        // if the node is the root take it as the nearest point so far
         double shortestDst;
         if (node == root) {
             shortestDst = point.distanceSquaredTo(node.point);
-            nearestPoint = root.point;
+            nearestPoint = node.point;
         }
+        // determine the shortest distance so far
         else {
             shortestDst = point.distanceSquaredTo(nearestPoint);
         }
-        // if the axis (H or V) of the node is not closer -to the point- than the shortest distance
-        // there is no way any point in this subtree can be closer than the current nearest point
-        // if (node != root && orientation == VERTICAL) {
-        //     if (shortestDst < node.point.distanceSquaredTo(new Point2D(point.x(), node.point.y())))
-        //         return nearestPoint;
-        // }
-        // else if (node != root && orientation == HORIZONTAL) {
-        //     if (shortestDst < node.point.distanceSquaredTo(new Point2D(node.point.x(), point.y())))
-        //         return nearestPoint;
-        // }
 
-        double dstSq = point.distanceSquaredTo(node.point);
         // update the point if you found a closer point
-        if (dstSq < shortestDst)
+        if (point.distanceSquaredTo(node.point) < shortestDst)
             nearestPoint = node.point;
 
+        // check the side of the query point
+        boolean sideLB;
+        if (orientation == VERTICAL)
+            sideLB = point.x() < node.point.x();
+        else
+            sideLB = point.y() < node.point.y();
+
+        // the main search on the point side
         if (orientation == VERTICAL) {
-            if (point.y() < node.point.y()) {
+            if (sideLB)
                 nearestPoint = nearest(node.left_bottom, point, HORIZONTAL, nearestPoint);
+            else
                 nearestPoint = nearest(node.right_top, point, HORIZONTAL, nearestPoint);
-            }
-            else {
-                nearestPoint = nearest(node.right_top, point, HORIZONTAL, nearestPoint);
-                nearestPoint = nearest(node.left_bottom, point, HORIZONTAL, nearestPoint);
-            }
         }
         else {
-            if (point.x() < node.point.x()) {
+            if (sideLB)
                 nearestPoint = nearest(node.left_bottom, point, VERTICAL, nearestPoint);
+            else
                 nearestPoint = nearest(node.right_top, point, VERTICAL, nearestPoint);
+        }
+
+        // do not forget to update the shortest distance
+        shortestDst = point.distanceSquaredTo(nearestPoint);
+        boolean checkOtherSide;
+        // is it possible to find a closer point in the other side?
+        if (orientation == VERTICAL)
+            checkOtherSide = Math.pow(point.x() - node.point.x(), 2) < shortestDst;
+        else
+            checkOtherSide = Math.pow(point.y() - node.point.y(), 2) < shortestDst;
+
+        // YES
+        // if it may be a closer point on the other side try and find it
+        if (checkOtherSide) {
+            if (orientation == VERTICAL) {
+                if (sideLB)
+                    nearestPoint = nearest(node.right_top, point, HORIZONTAL, nearestPoint);
+                else
+                    nearestPoint = nearest(node.left_bottom, point, HORIZONTAL, nearestPoint);
             }
             else {
-                nearestPoint = nearest(node.right_top, point, VERTICAL, nearestPoint);
-                nearestPoint = nearest(node.left_bottom, point, VERTICAL, nearestPoint);
+                if (sideLB)
+                    nearestPoint = nearest(node.right_top, point, VERTICAL, nearestPoint);
+                else
+                    nearestPoint = nearest(node.left_bottom, point, VERTICAL, nearestPoint);
             }
         }
+
         return nearestPoint;
     }
 
