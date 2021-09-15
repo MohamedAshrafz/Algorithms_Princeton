@@ -12,7 +12,7 @@ import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
 
 public class PointSET {
-    SET<Point2D> pointsSet;
+    private SET<Point2D> pointsSet;
 
     // construct an empty set of points
     public PointSET() {
@@ -53,6 +53,9 @@ public class PointSET {
 
     // all points that are inside the rectangle (or on the boundary)
     public Iterable<Point2D> range(RectHV rect) {
+        if (rect == null)
+            throw new IllegalArgumentException("the rectangle can not be nulled");
+
         Queue<Point2D> point2DQueue = new Queue<Point2D>();
 
         for (Point2D point : pointsSet)
@@ -64,6 +67,9 @@ public class PointSET {
 
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
+        if (p == null)
+            throw new IllegalArgumentException("the point can not be nulled");
+
         if (this.isEmpty())
             return null;
 

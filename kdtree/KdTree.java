@@ -91,24 +91,26 @@ public class KdTree {
         if (p == null)
             throw new IllegalArgumentException("the point can not be nulled");
 
+        if (isEmpty())
+            return false;
+
         return contains(root, p);
     }
 
     private boolean contains(Node x, Point2D p) {
         Node node = x;
 
-        while (true) {
+        while (node != null) {
             int cmpX = Double.compare(p.x(), node.point.x());
 
-            if (cmpX < 0)
+            if (cmpX < 0) {
                 node = node.left_bottom;
-            else if (cmpX > 0)
+                continue;
+            }
+            else if (cmpX > 0) {
                 node = node.right_top;
-            else
-                return true;
-
-            if (node == null)
-                break;
+                continue;
+            }
 
             int cmpY = Double.compare(p.y(), node.point.y());
 
@@ -118,9 +120,6 @@ public class KdTree {
                 node = node.right_top;
             else
                 return true;
-
-            if (node == null)
-                break;
         }
         return false;
     }
@@ -164,6 +163,9 @@ public class KdTree {
 
     // all points that are inside the rectangle (or on the boundary)
     public Iterable<Point2D> range(RectHV rect) {
+        if (rect == null)
+            throw new IllegalArgumentException("the rectangle can not be nulled");
+
         Queue<Point2D> point2DQueue = new Queue<Point2D>();
         point2DQueue = range(root, rect, VERTICAL, point2DQueue);
         return point2DQueue;
@@ -204,63 +206,63 @@ public class KdTree {
         return point2DQueue;
     }
 
-    private double shortestDisSq = Double.POSITIVE_INFINITY;
-
     // a nearest neighbor in the set to point p; null if the set is empty
     public Point2D nearest(Point2D p) {
-        Point2D nearestPiont = new Point2D(0, 0);
-        shortestDisSq = Double.POSITIVE_INFINITY;
-        return nearest(root, p, VERTICAL, LIFTBOTTOM, nearestPiont);
+        if (p == null)
+            throw new IllegalArgumentException("the point can not be nulled");
+
+        return nearest(root, p, VERTICAL, null);
     }
 
-    private Point2D nearest(Node node, Point2D point, boolean orientation, boolean lvl,
-                            Point2D nearestPiont) {
+    private Point2D nearest(Node node, Point2D point, boolean orientation, Point2D nearestPoint) {
         if (node == null)
-            return nearestPiont;
+            return nearestPoint;
 
-        if (orientation == VERTICAL && lvl == RIGHTTOP) {
-            if (shortestDisSq <= point.distanceSquaredTo(new Point2D(node.point.x(), point.y())))
-                return nearestPiont;
+        double shortestDst;
+        if (node == root) {
+            shortestDst = point.distanceSquaredTo(node.point);
+            nearestPoint = root.point;
         }
-        else if (orientation == HORIZONTAL && lvl == RIGHTTOP) {
-            if (shortestDisSq <= point.distanceSquaredTo(new Point2D(point.x(), node.point.y())))
-                return nearestPiont;
+        else {
+            shortestDst = point.distanceSquaredTo(nearestPoint);
         }
+        // if the axis (H or V) of the node is not closer -to the point- than the shortest distance
+        // there is no way any point in this subtree can be closer than the current nearest point
+        // if (node != root && orientation == VERTICAL) {
+        //     if (shortestDst < node.point.distanceSquaredTo(new Point2D(point.x(), node.point.y())))
+        //         return nearestPoint;
+        // }
+        // else if (node != root && orientation == HORIZONTAL) {
+        //     if (shortestDst < node.point.distanceSquaredTo(new Point2D(node.point.x(), point.y())))
+        //         return nearestPoint;
+        // }
 
-        double disSq = point.distanceSquaredTo(node.point);
-        if (disSq < shortestDisSq) {
-            shortestDisSq = disSq;
-            nearestPiont = node.point;
-        }
+        double dstSq = point.distanceSquaredTo(node.point);
+        // update the point if you found a closer point
+        if (dstSq < shortestDst)
+            nearestPoint = node.point;
+
         if (orientation == VERTICAL) {
-            if (point.y() <= node.point.y()) {
-                nearestPiont = nearest(node.left_bottom, point, HORIZONTAL, LIFTBOTTOM,
-                                       nearestPiont);
-                nearestPiont = nearest(node.right_top, point, HORIZONTAL, RIGHTTOP,
-                                       nearestPiont);
+            if (point.y() < node.point.y()) {
+                nearestPoint = nearest(node.left_bottom, point, HORIZONTAL, nearestPoint);
+                nearestPoint = nearest(node.right_top, point, HORIZONTAL, nearestPoint);
             }
             else {
-                nearestPiont = nearest(node.right_top, point, HORIZONTAL, RIGHTTOP,
-                                       nearestPiont);
-                nearestPiont = nearest(node.left_bottom, point, HORIZONTAL, LIFTBOTTOM,
-                                       nearestPiont);
+                nearestPoint = nearest(node.right_top, point, HORIZONTAL, nearestPoint);
+                nearestPoint = nearest(node.left_bottom, point, HORIZONTAL, nearestPoint);
             }
         }
         else {
-            if (point.x() <= node.point.x()) {
-                nearestPiont = nearest(node.left_bottom, point, VERTICAL, LIFTBOTTOM,
-                                       nearestPiont);
-                nearestPiont = nearest(node.right_top, point, VERTICAL, RIGHTTOP,
-                                       nearestPiont);
+            if (point.x() < node.point.x()) {
+                nearestPoint = nearest(node.left_bottom, point, VERTICAL, nearestPoint);
+                nearestPoint = nearest(node.right_top, point, VERTICAL, nearestPoint);
             }
             else {
-                nearestPiont = nearest(node.right_top, point, VERTICAL, RIGHTTOP,
-                                       nearestPiont);
-                nearestPiont = nearest(node.left_bottom, point, VERTICAL, LIFTBOTTOM,
-                                       nearestPiont);
+                nearestPoint = nearest(node.right_top, point, VERTICAL, nearestPoint);
+                nearestPoint = nearest(node.left_bottom, point, VERTICAL, nearestPoint);
             }
         }
-        return nearestPiont;
+        return nearestPoint;
     }
 
     public static void main(String[] args) {
