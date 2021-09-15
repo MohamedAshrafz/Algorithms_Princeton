@@ -11,6 +11,8 @@ import edu.princeton.cs.algs4.RectHV;
 import edu.princeton.cs.algs4.StdDraw;
 import edu.princeton.cs.algs4.StdOut;
 
+import java.awt.Color;
+
 public class KdTree {
     private Node root;
     private int size;
@@ -210,14 +212,17 @@ public class KdTree {
         if (p == null)
             throw new IllegalArgumentException("the point can not be nulled");
 
-        return nearest(root, p, VERTICAL, null);
+        return nearest(root, p, VERTICAL, null,
+                       new RectHV(0.0, 0.0, 1.0, 1.0));
     }
 
-    private Point2D nearest(Node node, Point2D point, boolean orientation, Point2D nearestPoint) {
+    private Point2D nearest(Node node, Point2D point, boolean orientation, Point2D nearestPoint,
+                            RectHV rect) {
         if (node == null)
             return nearestPoint;
 
         // if the node is the root take it as the nearest point so far
+        boolean checkLB, checkRT;
         double shortestDst;
         if (node == root) {
             shortestDst = point.distanceSquaredTo(node.point);
@@ -228,54 +233,73 @@ public class KdTree {
             shortestDst = point.distanceSquaredTo(nearestPoint);
         }
 
+        // this.draw();
+        // //StdDraw.clear();
+        // StdDraw.setPenColor(StdDraw.BLUE);
+        // StdDraw.setPenRadius(0.02);
+        // StdDraw.point(node.point.x(), node.point.y());
+        // StdDraw.show();
+        // StdDraw.pause(500);
+
+        // if shortest distance between point and rectangle is bigger that shortest distance return
+        if (rect.distanceSquaredTo(point) > shortestDst)
+            return nearestPoint;
+
         // update the point if you found a closer point
         if (point.distanceSquaredTo(node.point) < shortestDst)
             nearestPoint = node.point;
 
+
         // check the side of the query point
         boolean sideLB;
         if (orientation == VERTICAL)
-            sideLB = point.x() < node.point.x();
+            sideLB = point.x() <= node.point.x();
         else
-            sideLB = point.y() < node.point.y();
+            sideLB = point.y() <= node.point.y();
 
         // the main search on the point side
         if (orientation == VERTICAL) {
-            if (sideLB)
-                nearestPoint = nearest(node.left_bottom, point, HORIZONTAL, nearestPoint);
-            else
-                nearestPoint = nearest(node.right_top, point, HORIZONTAL, nearestPoint);
-        }
-        else {
-            if (sideLB)
-                nearestPoint = nearest(node.left_bottom, point, VERTICAL, nearestPoint);
-            else
-                nearestPoint = nearest(node.right_top, point, VERTICAL, nearestPoint);
-        }
-
-        // do not forget to update the shortest distance
-        shortestDst = point.distanceSquaredTo(nearestPoint);
-        boolean checkOtherSide;
-        // is it possible to find a closer point in the other side?
-        if (orientation == VERTICAL)
-            checkOtherSide = Math.pow(point.x() - node.point.x(), 2) < shortestDst;
-        else
-            checkOtherSide = Math.pow(point.y() - node.point.y(), 2) < shortestDst;
-
-        // YES
-        // if it may be a closer point on the other side try and find it
-        if (checkOtherSide) {
-            if (orientation == VERTICAL) {
-                if (sideLB)
-                    nearestPoint = nearest(node.right_top, point, HORIZONTAL, nearestPoint);
-                else
-                    nearestPoint = nearest(node.left_bottom, point, HORIZONTAL, nearestPoint);
+            if (sideLB) {
+                RectHV rectLocal = new RectHV(rect.xmin(), rect.ymin(), node.point.x(),
+                                              rect.ymax());
+                nearestPoint = nearest(node.left_bottom, point, HORIZONTAL, nearestPoint,
+                                       rectLocal);
+                rectLocal = new RectHV(node.point.x(), rect.ymin(), rect.xmax(),
+                                       rect.ymax());
+                nearestPoint = nearest(node.right_top, point, HORIZONTAL, nearestPoint,
+                                       rectLocal);
             }
             else {
-                if (sideLB)
-                    nearestPoint = nearest(node.right_top, point, VERTICAL, nearestPoint);
-                else
-                    nearestPoint = nearest(node.left_bottom, point, VERTICAL, nearestPoint);
+                RectHV rectLocal = new RectHV(node.point.x(), rect.ymin(), rect.xmax(),
+                                              rect.ymax());
+                nearestPoint = nearest(node.right_top, point, HORIZONTAL, nearestPoint,
+                                       rectLocal);
+                rectLocal = new RectHV(rect.xmin(), rect.ymin(), node.point.x(),
+                                       rect.ymax());
+                nearestPoint = nearest(node.left_bottom, point, HORIZONTAL, nearestPoint,
+                                       rectLocal);
+            }
+        }
+        else {
+            if (sideLB) {
+                RectHV rectLocal = new RectHV(rect.xmin(), rect.ymin(), rect.xmax(),
+                                              node.point.y());
+                nearestPoint = nearest(node.left_bottom, point, VERTICAL, nearestPoint,
+                                       rectLocal);
+                rectLocal = new RectHV(rect.xmin(), node.point.y(), rect.xmax(),
+                                       rect.ymax());
+                nearestPoint = nearest(node.right_top, point, VERTICAL, nearestPoint,
+                                       rectLocal);
+            }
+            else {
+                RectHV rectLocal = new RectHV(rect.xmin(), node.point.y(), rect.xmax(),
+                                              rect.ymax());
+                nearestPoint = nearest(node.right_top, point, VERTICAL, nearestPoint,
+                                       rectLocal);
+                rectLocal = new RectHV(rect.xmin(), rect.ymin(), rect.xmax(),
+                                       node.point.y());
+                nearestPoint = nearest(node.left_bottom, point, VERTICAL, nearestPoint,
+                                       rectLocal);
             }
         }
 
@@ -285,16 +309,19 @@ public class KdTree {
     public static void main(String[] args) {
         String filename = args[0];
         In in = new In(filename);
-        PointSET brute = new PointSET();
+        //PointSET brute = new PointSET();
         KdTree kdtree = new KdTree();
         while (!in.isEmpty()) {
             double x = in.readDouble();
             double y = in.readDouble();
             Point2D p = new Point2D(x, y);
             kdtree.insert(p);
-            brute.insert(p);
+            //brute.insert(p);
         }
-        StdOut.println(brute.nearest(new Point2D(1, 1)));
-        StdOut.println(kdtree.nearest(new Point2D(1, 1)));
+
+        StdDraw.setPenRadius(0.05);
+        StdDraw.setPenColor(Color.GREEN);
+        StdDraw.point(0.1875, 1.0);
+        StdOut.println(kdtree.nearest(new Point2D(0.1875, 1.0)));
     }
 }
