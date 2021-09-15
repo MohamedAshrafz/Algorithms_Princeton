@@ -61,14 +61,12 @@ public class KdTree {
 
         int cmpX = Double.compare(p.x(), node.point.x());
         int cmpY = Double.compare(p.y(), node.point.y());
+
         if (cmpX == 0 && cmpY == 0)
             return node;
-
         if (orientation == VERTICAL) {
             if (cmpX < 0)
                 node.left_bottom = insert(node.left_bottom, p, HORIZONTAL);
-            else if (cmpX > 0)
-                node.right_top = insert(node.right_top, p, HORIZONTAL);
             else
                 node.right_top = insert(node.right_top, p, HORIZONTAL);
 
@@ -77,8 +75,6 @@ public class KdTree {
         else {
             if (cmpY < 0)
                 node.left_bottom = insert(node.left_bottom, p, VERTICAL);
-            else if (cmpY > 0)
-                node.right_top = insert(node.right_top, p, VERTICAL);
             else
                 node.right_top = insert(node.right_top, p, VERTICAL);
 
@@ -94,34 +90,35 @@ public class KdTree {
         if (isEmpty())
             return false;
 
-        return contains(root, p);
+        return contains(root, p, VERTICAL);
     }
 
-    private boolean contains(Node x, Point2D p) {
-        Node node = x;
+    private boolean contains(Node node, Point2D p, boolean orientation) {
+        if (node == null)
+            return false;
 
-        while (node != null) {
-            int cmpX = Double.compare(p.x(), node.point.x());
+        int cmpX = Double.compare(p.x(), node.point.x());
+        int cmpY = Double.compare(p.y(), node.point.y());
 
+        if (cmpX == 0 && cmpY == 0)
+            return true;
+
+        if (orientation == VERTICAL) {
             if (cmpX < 0) {
-                node = node.left_bottom;
-                continue;
+                return contains(node.left_bottom, p, HORIZONTAL);
             }
-            else if (cmpX > 0) {
-                node = node.right_top;
-                continue;
+            else {
+                return contains(node.right_top, p, HORIZONTAL);
             }
-
-            int cmpY = Double.compare(p.y(), node.point.y());
-
-            if (cmpY < 0)
-                node = node.left_bottom;
-            else if (cmpY > 0)
-                node = node.right_top;
-            else
-                return true;
         }
-        return false;
+        else {
+            if (cmpY < 0) {
+                return contains(node.left_bottom, p, VERTICAL);
+            }
+            else {
+                return contains(node.right_top, p, VERTICAL);
+            }
+        }
     }
 
     // draw all points to standard draw
@@ -150,7 +147,7 @@ public class KdTree {
             draw(node.left_bottom, HORIZONTAL, limitMinX, limitMinY, nodeX, limitMaxY);
             draw(node.right_top, HORIZONTAL, nodeX, limitMinY, limitMaxX, limitMaxY);
         }
-        else if (orientation == HORIZONTAL) {
+        else {
 
             StdDraw.setPenColor(StdDraw.BLUE);
             StdDraw.setPenRadius();
