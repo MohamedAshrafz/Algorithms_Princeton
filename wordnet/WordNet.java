@@ -5,14 +5,17 @@
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.Digraph;
+import edu.princeton.cs.algs4.DirectedCycle;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.ST;
+import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
 
 public class WordNet {
     // ST connects every string with its occurrences (ids)
     private final ST<String, ArrayList<Integer>> stringsToIndexST;
+
     // Array of strings for every id
     private final ArrayList<String[]> indexToStringArr;
     // Mapping digraph of nouns
@@ -25,9 +28,10 @@ public class WordNet {
         if (synsets == null || hypernyms == null)
             throw new IllegalArgumentException();
         // initialization of DSs
-        indexToStringArr = new ArrayList<>();
+        indexToStringArr = new ArrayList<String[]>();
         stringsToIndexST = new ST<String, ArrayList<Integer>>();
 
+        // configuration of synsets in DSs
         synsetsConfig(synsets);
 
         // initialization of digraph
@@ -36,6 +40,11 @@ public class WordNet {
 
         // configuration of the edges
         hypernymsConfig(hypernyms);
+        // checking if the digraph is not a DAG (directed acyclic graph)
+        // if not throw an exception
+        DirectedCycle dc = new DirectedCycle(digraph);
+        if (dc.hasCycle())
+            throw new IllegalArgumentException();
     }
 
     // first make the synset array, ST
@@ -76,7 +85,7 @@ public class WordNet {
             int id = Integer.parseInt(line[0]);
 
             for (int i = 1; i < line.length; i++) {
-                digraph.addEdge(id, i);
+                digraph.addEdge(id, Integer.parseInt(line[i]));
             }
         }
     }
@@ -96,7 +105,9 @@ public class WordNet {
     // distance between nounA and nounB (defined below)
     public int distance(String nounA, String nounB) {
         if (nounA == null || nounB == null)
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("nouns con not be nulled value");
+        if (this.isNoun(nounA) || this.isNoun(nounB))
+            throw new IllegalArgumentException("is NOT a WordNet noun");
         return 0;
     }
 
@@ -104,7 +115,9 @@ public class WordNet {
     // in a shortest ancestral path (defined below)
     public String sap(String nounA, String nounB) {
         if (nounA == null || nounB == null)
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("nouns con not be nulled value");
+        if (this.isNoun(nounA) || this.isNoun(nounB))
+            throw new IllegalArgumentException("is NOT a WordNet noun");
         return "hello, world";
     }
 
@@ -141,16 +154,16 @@ public class WordNet {
         // StdOut.println(wn.stringsToIndexST.size());
 
 
-        // ArrayList<Integer> arr = wn.stringsToIndexST.get("bird");
-        //
-        // for (int i : arr){
-        //     StdOut.print(i + "\t");
-        //     String[] strArr = wn.indexToStringArr.get(i);
-        //
-        //     for (String str : strArr)
-        //         StdOut.print(str + "  ");
-        //     StdOut.println();
-        // }
+        ArrayList<Integer> arr = wn.stringsToIndexST.get("bird");
+
+        for (int i : arr) {
+            StdOut.print(i + "\t");
+            String[] strArr = wn.indexToStringArr.get(i);
+
+            for (String str : strArr)
+                StdOut.print(str + "  ");
+            StdOut.println();
+        }
 
         // StdOut.println(wn.V);
         // int i = 0;
