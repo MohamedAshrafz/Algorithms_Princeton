@@ -7,6 +7,7 @@
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.Stack;
+import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 
 public class SAP {
@@ -18,7 +19,9 @@ public class SAP {
         if (G == null)
             throw new IllegalArgumentException("digraph can not be nulled");
 
-        myBFS = new MyBFS(G);
+        //copy the digraph (defensive copy)
+        Digraph GCopy = new Digraph(G);
+        myBFS = new MyBFS(GCopy);
     }
 
     // length of shortest ancestral path between v and w; -1 if no such path
@@ -51,18 +54,19 @@ public class SAP {
         Digraph G = new Digraph(in);
         SAP sap = new SAP(G);
 
-        Stack<Integer> v = new Stack<Integer>();
-        v.push(13);
-        v.push(23);
-        v.push(24);
-        Stack<Integer> w = new Stack<Integer>();
-        w.push(6);
-        w.push(16);
-        w.push(17);
 
-        int length = sap.length(v, w);
-        int ancestor = sap.ancestor(v, w);
-        StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
+        while (!StdIn.isEmpty()) {
+            Stack<Integer> v = new Stack<Integer>();
+            Stack<Integer> w = new Stack<Integer>();
+            v.push(StdIn.readInt());
+            v.push(StdIn.readInt());
+            w.push(StdIn.readInt());
+            w.push(StdIn.readInt());
+            int length = sap.length(v, w);
+            int ancestor = sap.ancestor(v, w);
+            StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
+        }
+
 
         // In in = new In(args[0]);
         // Digraph G = new Digraph(in);

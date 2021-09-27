@@ -19,7 +19,8 @@ public class WordNet {
     private final ArrayList<String[]> indexToStringArr;
     // Mapping digraph of nouns
     private Digraph G;
-    // num of vertices
+    // SAP instance
+    private final SAP sap;
 
     // constructor takes the name of the two input files
     public WordNet(String synsets, String hypernyms) {
@@ -47,6 +48,8 @@ public class WordNet {
             throw new IllegalArgumentException("the graph has a cycle");
         if (!rooted())
             throw new IllegalArgumentException("not a rooted digraph");
+
+        sap = new SAP(G);
     }
 
     // first make the synset array, ST
@@ -113,7 +116,6 @@ public class WordNet {
         if (!this.isNoun(nounA) || !this.isNoun(nounB))
             throw new IllegalArgumentException("is NOT a WordNet noun");
 
-        SAP sap = new SAP(G);
         return sap.length(stringsToIndexST.get(nounA), stringsToIndexST.get(nounB));
     }
 
@@ -126,7 +128,6 @@ public class WordNet {
         if (!this.isNoun(nounA) || !this.isNoun(nounB))
             throw new IllegalArgumentException(nounA + " or " + nounB + " is NOT a WordNet noun");
 
-        SAP sap = new SAP(G);
         int ancestor = sap.ancestor(stringsToIndexST.get(nounA), stringsToIndexST.get(nounB));
 
         String[] synset = indexToStringArr.get(ancestor);

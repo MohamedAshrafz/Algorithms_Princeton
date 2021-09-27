@@ -11,17 +11,17 @@ import java.util.ArrayList;
 
 public class MyBFS {
 
-    private Digraph G;
+    private final Digraph G;
     // marked array for each vertex
-    private boolean markedS[];
-    private boolean markedW[];
+    private boolean[] markedS;
+    private boolean[] markedW;
     // distance to array for each vertex
-    private int disToS[];
-    private int disToW[];
+    private int[] disToS;
+    private int[] disToW;
 
     // edgeTo array for each vertex
-    // private int edgeToS[];
-    // private int edgeToW[];
+    // private int[] edgeToS;
+    // private int[] edgeToW;
 
     // ancestor and shortest distance
     private int ancestor;
@@ -37,7 +37,6 @@ public class MyBFS {
         // edgeToW = new int[G.V()];
         disToS = new int[G.V()];
         disToW = new int[G.V()];
-
     }
 
 
@@ -46,7 +45,7 @@ public class MyBFS {
         validateVertex(w);
 
         // if the two argument is the same vertex
-        if (s == w){
+        if (s == w) {
             ancestor = s;
             shortestDis = 0;
             return;
@@ -70,50 +69,76 @@ public class MyBFS {
 
         resetS.add(s);
         resetW.add(w);
+        // no more adding to queue (in k and k+1 required)
+        boolean noQueueingS = false;
+        boolean noQueueingW = false;
+        // add vertices with distances k and k+1 to array
+        ArrayList<Integer> arrS = new ArrayList<Integer>();
+        ArrayList<Integer> arrW = new ArrayList<Integer>();
 
         while (!quS.isEmpty() || !quW.isEmpty()) {
             // S vertex search
             if (!quS.isEmpty()) {
                 int vertexS = quS.dequeue();
                 for (int ad : G.adj(vertexS)) {
-                    markedS[ad] = true;
-                    quS.enqueue(ad);
-                    // edgeToS[ad] = vertexS;
-                    disToS[ad] = disToS[vertexS] + 1;
-                    resetS.add(ad);
+                    if (!markedS[ad]) {
+                        markedS[ad] = true;
+                        if (!noQueueingS)
+                            quS.enqueue(ad);
+                        // edgeToS[ad] = vertexS;
+                        disToS[ad] = disToS[vertexS] + 1;
+                        resetS.add(ad);
 
-                    if (markedW[ad]) {
-                        ancestor = ad;
-                        break;
+                        if (markedW[ad]) {
+                            noQueueingS = true;
+                        }
+                        if (markedW[ad] && noQueueingS) {
+                            arrS.add(ad);
+                        }
                     }
                 }
             }
-            // if you find the ancestor exit the loop
-            if (ancestor != -1)
-                break;
 
             // W vertex search
             if (!quW.isEmpty()) {
                 int vertexW = quW.dequeue();
                 for (int ad : G.adj(vertexW)) {
-                    markedW[ad] = true;
-                    quW.enqueue(ad);
-                    // edgeToW[ad] = vertexW;
-                    disToW[ad] = disToW[vertexW] + 1;
-                    resetW.add(ad);
+                    if (!markedW[ad]) {
+                        markedW[ad] = true;
+                        if (!noQueueingW)
+                            quW.enqueue(ad);
+                        // edgeToW[ad] = vertexW;
+                        disToW[ad] = disToW[vertexW] + 1;
+                        resetW.add(ad);
 
-                    if (markedS[ad]) {
-                        ancestor = ad;
-                        break;
+                        if (markedS[ad]) {
+                            noQueueingW = true;
+                        }
+                        if (markedS[ad] && noQueueingW) {
+                            arrW.add(ad);
+                        }
                     }
                 }
             }
-            // if you find the ancestor exit the loop
-            if (ancestor != -1)
-                break;
         }
-        if (ancestor != -1)
+
+        // get the shortest distance in the two collected arrays
+        int tempShortesDis = Integer.MAX_VALUE;
+        if (!arrS.isEmpty() || !arrW.isEmpty()) {
+            for (int i : arrS) {
+                if (disToS[i] + disToW[i] < tempShortesDis) {
+                    tempShortesDis = disToS[i] + disToW[i];
+                    ancestor = i;
+                }
+            }
+            for (int i : arrW) {
+                if (disToS[i] + disToW[i] < tempShortesDis) {
+                    tempShortesDis = disToS[i] + disToW[i];
+                    ancestor = i;
+                }
+            }
             shortestDis = disToS[ancestor] + disToW[ancestor];
+        }
 
         reset(resetS, resetW);
     }
@@ -124,9 +149,9 @@ public class MyBFS {
         validateIteratorVertex(w);
 
         // if any vertex in s is the same vertex in w
-        for (int i : s){
+        for (int i : s) {
             for (int j : w)
-                if(i == j){
+                if (i == j) {
                     ancestor = i;
                     shortestDis = 0;
                     return;
@@ -156,48 +181,76 @@ public class MyBFS {
             resetW.add(i);
         }
 
+        // no more adding to queue (in k and k+1 required)
+        boolean noQueueingS = false;
+        boolean noQueueingW = false;
+        // add vertices with distances k and k+1 to array
+        ArrayList<Integer> arrS = new ArrayList<Integer>();
+        ArrayList<Integer> arrW = new ArrayList<Integer>();
+
         while (!quS.isEmpty() || !quW.isEmpty()) {
 
             // S vertex search
             if (!quS.isEmpty()) {
                 int vertexS = quS.dequeue();
                 for (int ad : G.adj(vertexS)) {
-                    markedS[ad] = true;
-                    quS.enqueue(ad);
-                    // edgeToS[ad] = vertexS;
-                    disToS[ad] = disToS[vertexS] + 1;
-                    resetS.add(ad);
+                    if (!markedS[ad]) {
+                        markedS[ad] = true;
+                        if (!noQueueingS)
+                            quS.enqueue(ad);
+                        // edgeToS[ad] = vertexS;
+                        disToS[ad] = disToS[vertexS] + 1;
+                        resetS.add(ad);
 
-                    if (markedW[ad]) {
-                        ancestor = ad;
-                        break;
+                        if (markedW[ad]) {
+                            noQueueingS = true;
+                        }
+                        if (markedW[ad] && noQueueingS) {
+                            arrS.add(ad);
+                        }
                     }
                 }
             }
-            if (ancestor != -1)
-                break;
 
             // W vertex search
             if (!quW.isEmpty()) {
                 int vertexW = quW.dequeue();
                 for (int ad : G.adj(vertexW)) {
-                    markedW[ad] = true;
-                    quW.enqueue(ad);
-                    // edgeToW[ad] = vertexW;
-                    disToW[ad] = disToW[vertexW] + 1;
-                    resetW.add(ad);
+                    if (!markedW[ad]) {
+                        markedW[ad] = true;
+                        if (!noQueueingW)
+                            quW.enqueue(ad);
+                        // edgeToW[ad] = vertexW;
+                        disToW[ad] = disToW[vertexW] + 1;
+                        resetW.add(ad);
 
-                    if (markedS[ad]) {
-                        ancestor = ad;
-                        break;
+                        if (markedS[ad]) {
+                            noQueueingW = true;
+                        }
+                        if (markedS[ad] && noQueueingW) {
+                            arrW.add(ad);
+                        }
                     }
                 }
             }
-            if (ancestor != -1)
-                break;
         }
-        if (ancestor != -1)
+        // get the shortest distance in the two collected arrays
+        int tempShortesDis = Integer.MAX_VALUE;
+        if (!arrS.isEmpty() || !arrW.isEmpty()) {
+            for (int i : arrS) {
+                if (disToS[i] + disToW[i] < tempShortesDis) {
+                    tempShortesDis = disToS[i] + disToW[i];
+                    ancestor = i;
+                }
+            }
+            for (int i : arrW) {
+                if (disToS[i] + disToW[i] < tempShortesDis) {
+                    tempShortesDis = disToS[i] + disToW[i];
+                    ancestor = i;
+                }
+            }
             shortestDis = disToS[ancestor] + disToW[ancestor];
+        }
 
         reset(resetS, resetW);
     }
@@ -231,7 +284,7 @@ public class MyBFS {
             throw new IllegalArgumentException("out of range vertex");
     }
 
-    private void validateIteratorVertex(Iterable<Integer> iter){
+    private void validateIteratorVertex(Iterable<Integer> iter) {
         if (iter == null)
             throw new IllegalArgumentException("iterator is null");
 
