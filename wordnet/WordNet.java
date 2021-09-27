@@ -18,7 +18,7 @@ public class WordNet {
     // Array of strings for every id
     private final ArrayList<String[]> indexToStringArr;
     // Mapping digraph of nouns
-    private Digraph digraph;
+    private Digraph G;
     // num of vertices
 
     // constructor takes the name of the two input files
@@ -34,14 +34,14 @@ public class WordNet {
 
         // initialization of digraph
         int V = indexToStringArr.size();
-        digraph = new Digraph(V);
+        G = new Digraph(V);
 
         // configuration of the edges
         hypernymsConfig(hypernyms);
 
         // checking if the digraph is not a rooted DAG (directed acyclic graph)
         // if not throw an exception
-        DirectedCycle dc = new DirectedCycle(digraph);
+        DirectedCycle dc = new DirectedCycle(G);
 
         if (dc.hasCycle())
             throw new IllegalArgumentException("the graph has a cycle");
@@ -88,7 +88,7 @@ public class WordNet {
             int id = Integer.parseInt(line[0]);
 
             for (int i = 1; i < line.length; i++) {
-                digraph.addEdge(id, Integer.parseInt(line[i]));
+                G.addEdge(id, Integer.parseInt(line[i]));
             }
         }
     }
@@ -113,7 +113,7 @@ public class WordNet {
         if (!this.isNoun(nounA) || !this.isNoun(nounB))
             throw new IllegalArgumentException("is NOT a WordNet noun");
 
-        SAP sap = new SAP(digraph);
+        SAP sap = new SAP(G);
         return sap.length(stringsToIndexST.get(nounA), stringsToIndexST.get(nounB));
     }
 
@@ -126,7 +126,7 @@ public class WordNet {
         if (!this.isNoun(nounA) || !this.isNoun(nounB))
             throw new IllegalArgumentException(nounA + " or " + nounB + " is NOT a WordNet noun");
 
-        SAP sap = new SAP(digraph);
+        SAP sap = new SAP(G);
         int ancestor = sap.ancestor(stringsToIndexST.get(nounA), stringsToIndexST.get(nounB));
 
         String[] synset = indexToStringArr.get(ancestor);
@@ -141,8 +141,8 @@ public class WordNet {
     private boolean rooted() {
 
         int count = 0;
-        for (int i = 0; i < digraph.V(); i++){
-            if (digraph.outdegree(i) == 0)
+        for (int i = 0; i < G.V(); i++){
+            if (G.outdegree(i) == 0)
                 count++;
         }
         if (count > 1)

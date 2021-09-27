@@ -18,9 +18,11 @@ public class MyBFS {
     // distance to array for each vertex
     private int disToS[];
     private int disToW[];
+
     // edgeTo array for each vertex
     // private int edgeToS[];
     // private int edgeToW[];
+
     // ancestor and shortest distance
     private int ancestor;
     private int shortestDis;
@@ -35,19 +37,20 @@ public class MyBFS {
         // edgeToW = new int[G.V()];
         disToS = new int[G.V()];
         disToW = new int[G.V()];
-        ancestor = -1;
-        shortestDis = Integer.MAX_VALUE;
 
-        for (int v = 0; v < G.V(); v++) {
-            disToS[v] = Integer.MAX_VALUE;
-            disToW[v] = Integer.MAX_VALUE;
-        }
     }
 
 
     public void bfs(int s, int w) {
         validateVertex(s);
         validateVertex(w);
+
+        // if the two argument is the same vertex
+        if (s == w){
+            ancestor = s;
+            shortestDis = 0;
+            return;
+        }
 
         Queue<Integer> quS = new Queue<Integer>();
         Queue<Integer> quW = new Queue<Integer>();
@@ -56,15 +59,17 @@ public class MyBFS {
         ArrayList<Integer> resetW = new ArrayList<Integer>();
 
         ancestor = -1;
+        shortestDis = -1;
+
         markedS[s] = true;
         markedW[w] = true;
         disToS[s] = 0;
         disToW[w] = 0;
         quS.enqueue(s);
         quW.enqueue(w);
+
         resetS.add(s);
         resetW.add(w);
-
 
         while (!quS.isEmpty() || !quW.isEmpty()) {
             // S vertex search
@@ -109,9 +114,6 @@ public class MyBFS {
         }
         if (ancestor != -1)
             shortestDis = disToS[ancestor] + disToW[ancestor];
-        else {
-            shortestDis = -1;
-        }
 
         reset(resetS, resetW);
     }
@@ -121,6 +123,16 @@ public class MyBFS {
         validateIteratorVertex(s);
         validateIteratorVertex(w);
 
+        // if any vertex in s is the same vertex in w
+        for (int i : s){
+            for (int j : w)
+                if(i == j){
+                    ancestor = i;
+                    shortestDis = 0;
+                    return;
+                }
+        }
+
         Queue<Integer> quS = new Queue<Integer>();
         Queue<Integer> quW = new Queue<Integer>();
 
@@ -129,6 +141,8 @@ public class MyBFS {
 
         // reset the ancestor
         ancestor = -1;
+        shortestDis = -1;
+
         for (int i : s) {
             quS.enqueue(i);
             markedS[i] = true;
@@ -142,7 +156,6 @@ public class MyBFS {
             resetW.add(i);
         }
 
-
         while (!quS.isEmpty() || !quW.isEmpty()) {
 
             // S vertex search
@@ -185,8 +198,6 @@ public class MyBFS {
         }
         if (ancestor != -1)
             shortestDis = disToS[ancestor] + disToW[ancestor];
-        else
-            shortestDis = -1;
 
         reset(resetS, resetW);
     }
@@ -228,7 +239,7 @@ public class MyBFS {
             if (v == null)
                 throw new IllegalArgumentException("vertex is null");
 
-            if (v < 0 || v > G.V())
+            if (v < 0 || v >= G.V())
                 throw new IllegalArgumentException("out of range vertex");
         }
     }
