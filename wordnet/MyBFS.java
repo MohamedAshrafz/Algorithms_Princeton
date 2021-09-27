@@ -1,7 +1,7 @@
 /* *****************************************************************************
- *  Name:
- *  Date:
- *  Description:
+ *  Name: mohamed ashraf farouk
+ *  Date: 24/9/2021
+ *  Description: my own custom implementation of breadth first search algorithm
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.Digraph;
@@ -9,7 +9,8 @@ import edu.princeton.cs.algs4.Queue;
 
 import java.util.ArrayList;
 
-class MyBFS {
+public class MyBFS {
+
     private Digraph G;
     // marked array for each vertex
     private boolean markedS[];
@@ -26,7 +27,7 @@ class MyBFS {
     // path queue
     // private LinkedList<Integer> path;
 
-    MyBFS(Digraph G) {
+    public MyBFS(Digraph G) {
         this.G = G;
         markedS = new boolean[G.V()];
         markedW = new boolean[G.V()];
@@ -43,7 +44,10 @@ class MyBFS {
         }
     }
 
-    void bfs(int s, int w) {
+
+    public void bfs(int s, int w) {
+        validateVertex(s);
+        validateVertex(w);
 
         Queue<Integer> quS = new Queue<Integer>();
         Queue<Integer> quW = new Queue<Integer>();
@@ -51,6 +55,7 @@ class MyBFS {
         ArrayList<Integer> resetS = new ArrayList<Integer>();
         ArrayList<Integer> resetW = new ArrayList<Integer>();
 
+        ancestor = -1;
         markedS[s] = true;
         markedW[w] = true;
         disToS[s] = 0;
@@ -60,10 +65,8 @@ class MyBFS {
         resetS.add(s);
         resetW.add(w);
 
-        boolean breakCondition = false;
 
         while (!quS.isEmpty() || !quW.isEmpty()) {
-
             // S vertex search
             if (!quS.isEmpty()) {
                 int vertexS = quS.dequeue();
@@ -76,12 +79,12 @@ class MyBFS {
 
                     if (markedW[ad]) {
                         ancestor = ad;
-                        breakCondition = true;
                         break;
                     }
                 }
             }
-            if (breakCondition)
+            // if you find the ancestor exit the loop
+            if (ancestor != -1)
                 break;
 
             // W vertex search
@@ -96,27 +99,36 @@ class MyBFS {
 
                     if (markedS[ad]) {
                         ancestor = ad;
-                        breakCondition = true;
                         break;
                     }
                 }
             }
-            if (breakCondition)
+            // if you find the ancestor exit the loop
+            if (ancestor != -1)
                 break;
         }
-        shortestDis = disToS[ancestor] + disToW[ancestor];
+        if (ancestor != -1)
+            shortestDis = disToS[ancestor] + disToW[ancestor];
+        else {
+            shortestDis = -1;
+        }
 
         reset(resetS, resetW);
     }
 
     // bfs for subset
-    void bfs(Iterable<Integer> s, Iterable<Integer> w) {
+    public void bfs(Iterable<Integer> s, Iterable<Integer> w) {
+        validateIteratorVertex(s);
+        validateIteratorVertex(w);
+
         Queue<Integer> quS = new Queue<Integer>();
         Queue<Integer> quW = new Queue<Integer>();
 
         ArrayList<Integer> resetS = new ArrayList<Integer>();
         ArrayList<Integer> resetW = new ArrayList<Integer>();
 
+        // reset the ancestor
+        ancestor = -1;
         for (int i : s) {
             quS.enqueue(i);
             markedS[i] = true;
@@ -130,7 +142,6 @@ class MyBFS {
             resetW.add(i);
         }
 
-        boolean breakCondition = false;
 
         while (!quS.isEmpty() || !quW.isEmpty()) {
 
@@ -146,12 +157,11 @@ class MyBFS {
 
                     if (markedW[ad]) {
                         ancestor = ad;
-                        breakCondition = true;
                         break;
                     }
                 }
             }
-            if (breakCondition)
+            if (ancestor != -1)
                 break;
 
             // W vertex search
@@ -166,31 +176,33 @@ class MyBFS {
 
                     if (markedS[ad]) {
                         ancestor = ad;
-                        breakCondition = true;
                         break;
                     }
                 }
             }
-            if (breakCondition)
+            if (ancestor != -1)
                 break;
         }
-        shortestDis = disToS[ancestor] + disToW[ancestor];
+        if (ancestor != -1)
+            shortestDis = disToS[ancestor] + disToW[ancestor];
+        else
+            shortestDis = -1;
 
         reset(resetS, resetW);
     }
 
     // return shortest distance method
-    int getShortestDis() {
+    public int getShortestDis() {
         return shortestDis;
     }
 
     // return common ancestor method
-    int getAncestor() {
+    public int getAncestor() {
         return ancestor;
     }
 
     // resetting the arrays
-    void reset(ArrayList<Integer> resetS, ArrayList<Integer> resetw) {
+    private void reset(ArrayList<Integer> resetS, ArrayList<Integer> resetw) {
         for (int i : resetS) {
             markedS[i] = false;
             disToS[i] = Integer.MAX_VALUE;
@@ -198,6 +210,26 @@ class MyBFS {
         for (int i : resetw) {
             markedW[i] = false;
             disToW[i] = Integer.MAX_VALUE;
+        }
+    }
+
+    private void validateVertex(Integer v) {
+        if (v == null)
+            throw new IllegalArgumentException("vertex is null");
+        if (v < 0 || v >= G.V())
+            throw new IllegalArgumentException("out of range vertex");
+    }
+
+    private void validateIteratorVertex(Iterable<Integer> iter){
+        if (iter == null)
+            throw new IllegalArgumentException("iterator is null");
+
+        for (Integer v : iter) {
+            if (v == null)
+                throw new IllegalArgumentException("vertex is null");
+
+            if (v < 0 || v > G.V())
+                throw new IllegalArgumentException("out of range vertex");
         }
     }
 

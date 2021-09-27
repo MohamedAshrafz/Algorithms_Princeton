@@ -8,20 +8,18 @@ import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.DirectedCycle;
 import edu.princeton.cs.algs4.In;
 import edu.princeton.cs.algs4.ST;
-import edu.princeton.cs.algs4.StdOut;
 
 import java.util.ArrayList;
 
 public class WordNet {
+
     // ST connects every string with its occurrences (ids)
     private final ST<String, ArrayList<Integer>> stringsToIndexST;
-
     // Array of strings for every id
     private final ArrayList<String[]> indexToStringArr;
     // Mapping digraph of nouns
     private Digraph digraph;
     // num of vertices
-    private final int V;
 
     // constructor takes the name of the two input files
     public WordNet(String synsets, String hypernyms) {
@@ -35,16 +33,20 @@ public class WordNet {
         synsetsConfig(synsets);
 
         // initialization of digraph
-        V = indexToStringArr.size();
+        int V = indexToStringArr.size();
         digraph = new Digraph(V);
 
         // configuration of the edges
         hypernymsConfig(hypernyms);
-        // checking if the digraph is not a DAG (directed acyclic graph)
+
+        // checking if the digraph is not a rooted DAG (directed acyclic graph)
         // if not throw an exception
         DirectedCycle dc = new DirectedCycle(digraph);
+
         if (dc.hasCycle())
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("the graph has a cycle");
+        if (!rooted())
+            throw new IllegalArgumentException("not a rooted digraph");
     }
 
     // first make the synset array, ST
@@ -69,9 +71,9 @@ public class WordNet {
                     intArr.add(i);
                 }
                 else {
-                    intArr = new ArrayList<Integer>();
-                    intArr.add(i);
-                    stringsToIndexST.put(noun, intArr);
+                    ArrayList<Integer> newIntARR = new ArrayList<Integer>();
+                    newIntARR.add(i);
+                    stringsToIndexST.put(noun, newIntARR);
                 }
             }
         }
@@ -80,6 +82,7 @@ public class WordNet {
     // second make graph edges
     private void hypernymsConfig(String hypernyms) {
         In inHypernyms = new In(hypernyms);
+
         while (inHypernyms.hasNextLine()) {
             String[] line = inHypernyms.readLine().split(",");
             int id = Integer.parseInt(line[0]);
@@ -104,26 +107,53 @@ public class WordNet {
 
     // distance between nounA and nounB (defined below)
     public int distance(String nounA, String nounB) {
+
         if (nounA == null || nounB == null)
             throw new IllegalArgumentException("nouns con not be nulled value");
-        if (this.isNoun(nounA) || this.isNoun(nounB))
+        if (!this.isNoun(nounA) || !this.isNoun(nounB))
             throw new IllegalArgumentException("is NOT a WordNet noun");
-        return 0;
+
+        SAP sap = new SAP(digraph);
+        return sap.length(stringsToIndexST.get(nounA), stringsToIndexST.get(nounB));
     }
 
     // a synset (second field of synsets.txt) that is the common ancestor of nounA and nounB
     // in a shortest ancestral path (defined below)
     public String sap(String nounA, String nounB) {
+
         if (nounA == null || nounB == null)
-            throw new IllegalArgumentException("nouns con not be nulled value");
-        if (this.isNoun(nounA) || this.isNoun(nounB))
-            throw new IllegalArgumentException("is NOT a WordNet noun");
-        return "hello, world";
+            throw new IllegalArgumentException("nouns con not be null");
+        if (!this.isNoun(nounA) || !this.isNoun(nounB))
+            throw new IllegalArgumentException(nounA + " or " + nounB + " is NOT a WordNet noun");
+
+        SAP sap = new SAP(digraph);
+        int ancestor = sap.ancestor(stringsToIndexST.get(nounA), stringsToIndexST.get(nounB));
+
+        String[] synset = indexToStringArr.get(ancestor);
+        StringBuilder str = new StringBuilder();
+
+        for (String s : synset)
+            str.append(s + " ");
+
+        return str.toString();
+    }
+
+    private boolean rooted() {
+
+        int count = 0;
+        for (int i = 0; i < digraph.V(); i++){
+            if (digraph.outdegree(i) == 0)
+                count++;
+        }
+        if (count > 1)
+            return false;
+
+        return true;
     }
 
     // do unit testing of this class
     public static void main(String[] args) {
-        WordNet wn = new WordNet("synsets.txt", "hypernyms.txt");
+        WordNet wn = new WordNet("synsets6.txt", "hypernyms6InvalidTwoRoots.txt");
 
         // for (String[] stringArr : wn.stringsArrays) {
         //     for (String str : stringArr)
@@ -154,16 +184,16 @@ public class WordNet {
         // StdOut.println(wn.stringsToIndexST.size());
 
 
-        ArrayList<Integer> arr = wn.stringsToIndexST.get("bird");
-
-        for (int i : arr) {
-            StdOut.print(i + "\t");
-            String[] strArr = wn.indexToStringArr.get(i);
-
-            for (String str : strArr)
-                StdOut.print(str + "  ");
-            StdOut.println();
-        }
+        // ArrayList<Integer> arr = wn.stringsToIndexST.get("bird");
+        //
+        // for (int i : arr) {
+        //     StdOut.print(i + "\t");
+        //     String[] strArr = wn.indexToStringArr.get(i);
+        //
+        //     for (String str : strArr)
+        //         StdOut.print(str + "  ");
+        //     StdOut.println();
+        // }
 
         // StdOut.println(wn.V);
         // int i = 0;
@@ -176,5 +206,8 @@ public class WordNet {
         // for (String str : strArr)
         //     StdOut.print(str + "  ");
         // StdOut.println();
+
+        // StdOut.println(wn.sap("individual", "edible_fruit"));
+        // StdOut.println(wn.distance("individual", "edible_fruit"));
     }
 }

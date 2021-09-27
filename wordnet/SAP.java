@@ -11,12 +11,13 @@ import edu.princeton.cs.algs4.StdOut;
 
 public class SAP {
 
-    private final Digraph digraph;
     private final MyBFS myBFS;
 
     // constructor takes a digraph (not necessarily a DAG)
     public SAP(Digraph G) {
-        digraph = new Digraph(G);
+        if (G == null)
+            throw new IllegalArgumentException("digraph can not be nulled");
+
         myBFS = new MyBFS(G);
     }
 
@@ -45,10 +46,11 @@ public class SAP {
     }
 
     public static void main(String[] args) {
+
         In in = new In(args[0]);
         Digraph G = new Digraph(in);
         SAP sap = new SAP(G);
-        // while (!StdIn.isEmpty()) {
+
         Stack<Integer> v = new Stack<Integer>();
         v.push(13);
         v.push(23);
@@ -57,9 +59,20 @@ public class SAP {
         w.push(6);
         w.push(16);
         w.push(17);
+
         int length = sap.length(v, w);
         int ancestor = sap.ancestor(v, w);
         StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
-        // }
+
+        // In in = new In(args[0]);
+        // Digraph G = new Digraph(in);
+        // SAP sap = new SAP(G);
+        // while (!StdIn.isEmpty()) {
+        //     int v = StdIn.readInt();
+        //     int w = StdIn.readInt();
+        //     int length = sap.length(v, w);
+        //     int ancestor = sap.ancestor(v, w);
+        //     StdOut.printf("length = %d, ancestor = %d\n", length, ancestor);
+        // {
     }
 }
