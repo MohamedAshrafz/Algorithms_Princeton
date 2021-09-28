@@ -6,15 +6,12 @@
 
 import edu.princeton.cs.algs4.Digraph;
 import edu.princeton.cs.algs4.In;
-import edu.princeton.cs.algs4.ST;
 import edu.princeton.cs.algs4.StdIn;
 import edu.princeton.cs.algs4.StdOut;
 
 public class SAP {
 
     private final MyBFS myBFS;
-    private final ST<CacheNode, Integer> lenCacheST;
-    private final ST<CacheNode, Integer> ancCacheST;
 
     // constructor takes a digraph (not necessarily a DAG)
     public SAP(Digraph G) {
@@ -27,42 +24,18 @@ public class SAP {
         // initializing instance of myBFS class
         // one is enough for every graph
         myBFS = new MyBFS(GCopy);
-
-        //caching the data of queries
-        lenCacheST = new ST<CacheNode, Integer>();
-        ancCacheST = new ST<CacheNode, Integer>();
     }
 
     // length of shortest ancestral path between v and w; -1 if no such path
     public int length(int v, int w) {
-        CacheNode node = new CacheNode(v, w);
-
-        Integer len = lenCacheST.get(new CacheNode(v, w));
-        if (len != null)
-            return len;
-        else {
-            myBFS.bfs(v, w);
-            int newLen = myBFS.getShortestDis();
-            lenCacheST.put(node, newLen);
-            ancCacheST.put(node, myBFS.getAncestor());
-            return newLen;
-        }
+        myBFS.bfs(v, w);
+        return myBFS.getShortestDis();
     }
 
     // a common ancestor of v and w that participates in a shortest ancestral path; -1 if no such path
     public int ancestor(int v, int w) {
-        CacheNode node = new CacheNode(v, w);
-
-        Integer anc = ancCacheST.get(new CacheNode(v, w));
-        if (anc != null)
-            return anc;
-        else {
-            myBFS.bfs(v, w);
-            int newAnc = myBFS.getAncestor();
-            ancCacheST.put(node, newAnc);
-            lenCacheST.put(node, myBFS.getShortestDis());
-            return newAnc;
-        }
+        myBFS.bfs(v, w);
+        return myBFS.getAncestor();
     }
 
     // length of shortest ancestral path between any vertex in v and any vertex in w; -1 if no such path
@@ -75,26 +48,6 @@ public class SAP {
     public int ancestor(Iterable<Integer> v, Iterable<Integer> w) {
         myBFS.bfs(v, w);
         return myBFS.getAncestor();
-    }
-
-    private class CacheNode implements Comparable<CacheNode> {
-        private int v;
-        private int w;
-
-        private CacheNode(int v, int w) {
-            this.v = v;
-            this.w = w;
-        }
-
-        public int compareTo(CacheNode cacheNode) {
-
-            // if this.v == that.v compare with w
-            if (this.v == cacheNode.v)
-                return Integer.compare(this.w, cacheNode.w);
-            else
-                // if this.v != that.v compare with v
-                return Integer.compare(this.v, cacheNode.v);
-        }
     }
 
     public static void main(String[] args) {
