@@ -37,6 +37,11 @@ public class MyBFS {
         // edgeToW = new int[G.V()];
         disToS = new int[G.V()];
         disToW = new int[G.V()];
+
+        for (int i = 0; i < G.V(); i++) {
+            disToS[i] = Integer.MAX_VALUE;
+            disToW[i] = Integer.MAX_VALUE;
+        }
     }
 
 
@@ -76,6 +81,8 @@ public class MyBFS {
         ArrayList<Integer> arrS = new ArrayList<Integer>();
         ArrayList<Integer> arrW = new ArrayList<Integer>();
 
+        int shortestSoFar = Integer.MAX_VALUE;
+
         while (!quS.isEmpty() || !quW.isEmpty()) {
             // S vertex search
             if (!quS.isEmpty()) {
@@ -83,17 +90,23 @@ public class MyBFS {
                 for (int ad : G.adj(vertexS)) {
                     if (!markedS[ad]) {
                         markedS[ad] = true;
-                        if (!noQueueingS)
-                            quS.enqueue(ad);
-                        // edgeToS[ad] = vertexS;
                         disToS[ad] = disToS[vertexS] + 1;
                         resetS.add(ad);
 
-                        if (markedW[ad] && disToW[ad] == 0)
-                            noQueueingS = true;
+                        if (!noQueueingS)
+                            quS.enqueue(ad);
+                        else if (disToS[ad] < shortestSoFar)
+                            quS.enqueue(ad);
+
+                        // edgeToS[ad] = vertexS;
 
                         if (markedW[ad])
-                            arrS.add(ad);
+                            noQueueingS = true;
+
+                        if (markedW[ad] && disToS[ad] + disToW[ad] < shortestSoFar) {
+                            shortestSoFar = disToS[ad] + disToW[ad];
+                            ancestor = ad;
+                        }
                     }
                 }
             }
@@ -104,39 +117,28 @@ public class MyBFS {
                 for (int ad : G.adj(vertexW)) {
                     if (!markedW[ad]) {
                         markedW[ad] = true;
-                        if (!noQueueingW)
-                            quW.enqueue(ad);
-                        // edgeToW[ad] = vertexW;
                         disToW[ad] = disToW[vertexW] + 1;
                         resetW.add(ad);
 
-                        if (markedS[ad] && disToS[ad] == 0)
-                            noQueueingW = true;
+                        if (!noQueueingW)
+                            quW.enqueue(ad);
+                        else if (disToW[ad] < shortestSoFar)
+                            quW.enqueue(ad);
+                        // edgeToW[ad] = vertexW;
 
                         if (markedS[ad])
-                            arrW.add(ad);
+                            noQueueingW = true;
+
+                        if (markedS[ad] && disToS[ad] + disToW[ad] < shortestSoFar) {
+                            shortestSoFar = disToS[ad] + disToW[ad];
+                            ancestor = ad;
+                        }
                     }
                 }
             }
         }
-
-        // get the shortest distance in the two collected arrays
-        int tempShortesDis = Integer.MAX_VALUE;
-        if (!arrS.isEmpty() || !arrW.isEmpty()) {
-            for (int i : arrS) {
-                if (disToS[i] + disToW[i] < tempShortesDis) {
-                    tempShortesDis = disToS[i] + disToW[i];
-                    ancestor = i;
-                }
-            }
-            for (int i : arrW) {
-                if (disToS[i] + disToW[i] < tempShortesDis) {
-                    tempShortesDis = disToS[i] + disToW[i];
-                    ancestor = i;
-                }
-            }
-            shortestDis = disToS[ancestor] + disToW[ancestor];
-        }
+        if (shortestSoFar != Integer.MAX_VALUE)
+            shortestDis = shortestSoFar;
 
         reset(resetS, resetW);
     }
@@ -186,6 +188,8 @@ public class MyBFS {
         ArrayList<Integer> arrS = new ArrayList<Integer>();
         ArrayList<Integer> arrW = new ArrayList<Integer>();
 
+        int shortestSoFar = Integer.MAX_VALUE;
+
         while (!quS.isEmpty() || !quW.isEmpty()) {
 
             // S vertex search
@@ -194,17 +198,23 @@ public class MyBFS {
                 for (int ad : G.adj(vertexS)) {
                     if (!markedS[ad]) {
                         markedS[ad] = true;
-                        if (!noQueueingS)
-                            quS.enqueue(ad);
-                        // edgeToS[ad] = vertexS;
                         disToS[ad] = disToS[vertexS] + 1;
                         resetS.add(ad);
 
-                        if (markedW[ad] && disToW[ad] == 0)
-                            noQueueingS = true;
+                        if (!noQueueingS)
+                            quS.enqueue(ad);
+                        else if (disToS[ad] < shortestSoFar)
+                            quS.enqueue(ad);
+
+                        // edgeToS[ad] = vertexS;
 
                         if (markedW[ad])
-                            arrS.add(ad);
+                            noQueueingS = true;
+
+                        if (markedW[ad] && disToS[ad] + disToW[ad] < shortestSoFar) {
+                            shortestSoFar = disToS[ad] + disToW[ad];
+                            ancestor = ad;
+                        }
                     }
                 }
             }
@@ -215,38 +225,28 @@ public class MyBFS {
                 for (int ad : G.adj(vertexW)) {
                     if (!markedW[ad]) {
                         markedW[ad] = true;
-                        if (!noQueueingW)
-                            quW.enqueue(ad);
-                        // edgeToW[ad] = vertexW;
                         disToW[ad] = disToW[vertexW] + 1;
                         resetW.add(ad);
 
-                        if (markedS[ad] && disToS[ad] == 0)
-                            noQueueingW = true;
+                        if (!noQueueingW)
+                            quW.enqueue(ad);
+                        else if (disToW[ad] < shortestSoFar)
+                            quW.enqueue(ad);
+                        // edgeToW[ad] = vertexW;
 
                         if (markedS[ad])
-                            arrW.add(ad);
+                            noQueueingW = true;
+
+                        if (markedS[ad] && disToS[ad] + disToW[ad] < shortestSoFar) {
+                            shortestSoFar = disToS[ad] + disToW[ad];
+                            ancestor = ad;
+                        }
                     }
                 }
             }
         }
-        // get the shortest distance in the two collected arrays
-        int tempShortesDis = Integer.MAX_VALUE;
-        if (!arrS.isEmpty() || !arrW.isEmpty()) {
-            for (int i : arrS) {
-                if (disToS[i] + disToW[i] < tempShortesDis) {
-                    tempShortesDis = disToS[i] + disToW[i];
-                    ancestor = i;
-                }
-            }
-            for (int i : arrW) {
-                if (disToS[i] + disToW[i] < tempShortesDis) {
-                    tempShortesDis = disToS[i] + disToW[i];
-                    ancestor = i;
-                }
-            }
-            shortestDis = disToS[ancestor] + disToW[ancestor];
-        }
+        if (shortestSoFar != Integer.MAX_VALUE)
+            shortestDis = shortestSoFar;
 
         reset(resetS, resetW);
     }
