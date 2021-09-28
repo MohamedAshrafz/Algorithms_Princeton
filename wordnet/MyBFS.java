@@ -89,12 +89,11 @@ public class MyBFS {
                         disToS[ad] = disToS[vertexS] + 1;
                         resetS.add(ad);
 
-                        if (markedW[ad]) {
+                        if (markedW[ad] && disToW[ad] == 0)
                             noQueueingS = true;
-                        }
-                        if (markedW[ad] && noQueueingS) {
+
+                        if (markedW[ad])
                             arrS.add(ad);
-                        }
                     }
                 }
             }
@@ -111,12 +110,11 @@ public class MyBFS {
                         disToW[ad] = disToW[vertexW] + 1;
                         resetW.add(ad);
 
-                        if (markedS[ad]) {
+                        if (markedS[ad] && disToS[ad] == 0)
                             noQueueingW = true;
-                        }
-                        if (markedS[ad] && noQueueingW) {
+
+                        if (markedS[ad])
                             arrW.add(ad);
-                        }
                     }
                 }
             }
@@ -202,12 +200,11 @@ public class MyBFS {
                         disToS[ad] = disToS[vertexS] + 1;
                         resetS.add(ad);
 
-                        if (markedW[ad]) {
+                        if (markedW[ad] && disToW[ad] == 0)
                             noQueueingS = true;
-                        }
-                        if (markedW[ad] && noQueueingS) {
+
+                        if (markedW[ad])
                             arrS.add(ad);
-                        }
                     }
                 }
             }
@@ -224,12 +221,11 @@ public class MyBFS {
                         disToW[ad] = disToW[vertexW] + 1;
                         resetW.add(ad);
 
-                        if (markedS[ad]) {
+                        if (markedS[ad] && disToS[ad] == 0)
                             noQueueingW = true;
-                        }
-                        if (markedS[ad] && noQueueingW) {
+
+                        if (markedS[ad])
                             arrW.add(ad);
-                        }
                     }
                 }
             }

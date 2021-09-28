@@ -18,7 +18,7 @@ public class WordNet {
     // Array of strings for every id
     private final ArrayList<String[]> indexToStringArr;
     // Mapping digraph of nouns
-    private Digraph G;
+    private final Digraph G;
     // SAP instance
     private final SAP sap;
 
