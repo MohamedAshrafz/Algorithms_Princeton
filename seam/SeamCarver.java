@@ -5,6 +5,7 @@
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.Picture;
+import edu.princeton.cs.algs4.StdOut;
 
 public class SeamCarver {
 
@@ -42,6 +43,8 @@ public class SeamCarver {
         if (!energyAlreadyCalculated)
             calcEnergy();
 
+        energyAlreadyCalculated = true;
+
         return energy[x][y];
     }
 
@@ -61,11 +64,12 @@ public class SeamCarver {
             throw new IllegalArgumentException("seam can not be null");
         if (picture.width() == 1)
             throw new IllegalArgumentException("can not remove this seam");
+        energyAlreadyCalculated = false;
+        reCalcHorEnergy(seam);
     }
 
     // remove vertical seam from current picture
     public void removeVerticalSeam(int[] seam) {
-
         if (seam == null)
             throw new IllegalArgumentException("seam can not be null");
         if (picture.width() == 1)
@@ -84,7 +88,7 @@ public class SeamCarver {
                 energy[x][y] = Math.sqrt(calcGradSqX(x, y) + calcGradSqY(x, y));
             }
         }
-        // update the flag for calculating the energy
+        // update the flag to already-calculated
         energyAlreadyCalculated = true;
     }
 
@@ -105,6 +109,7 @@ public class SeamCarver {
                                                            + calcGradSqY(seam[y] + 1, y));
             }
         }
+        // update the flag to already-calculated
         energyAlreadyCalculated = true;
     }
 
@@ -117,13 +122,14 @@ public class SeamCarver {
                 energy[x][seam[x] - 1] = Math.sqrt(calcGradSqX(x, seam[x] - 1)
                                                            + calcGradSqY(x, seam[x] - 1));
             }
-            if (inCorner(x, seam[x] - 1))
+            if (inCorner(x, seam[x] + 1))
                 energy[x][seam[x] + 1] = 1000.0;
             else {
                 energy[x][seam[x] + 1] = Math.sqrt(calcGradSqX(x, seam[x] + 1)
                                                            + calcGradSqY(x, seam[x] + 1));
             }
         }
+        // update the flag to already-calculated
         energyAlreadyCalculated = true;
     }
 
@@ -198,6 +204,30 @@ public class SeamCarver {
 
     //  unit testing (optional)
     public static void main(String[] args) {
+        Picture picture = new Picture(args[0]);
+        StdOut.printf("image is %d pixels wide by %d pixels high.\n", picture.width(), picture.height());
+
+        SeamCarver sc = new SeamCarver(picture);
+
+        StdOut.printf("Printing energy calculated for each pixel.\n");
+
+        for (int row = 0; row < sc.height(); row++) {
+            for (int col = 0; col < sc.width(); col++)
+                StdOut.printf("%9.0f ", sc.energy(col, row));
+            StdOut.println();
+        }
+
+        int[] seam = { 2, 2, 1, 2, 1, 2 };
+        sc.reCalcHorEnergy(seam);
+
+        StdOut.println();
+        StdOut.println();
+        StdOut.printf("Printing energy calculated for each pixel.\n");
+        for (int row = 0; row < sc.height(); row++) {
+            for (int col = 0; col < sc.width(); col++)
+                StdOut.printf("%9.0f ", sc.energy(col, row));
+            StdOut.println();
+        }
     }
 
 }
