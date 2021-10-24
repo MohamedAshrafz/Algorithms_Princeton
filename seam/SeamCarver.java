@@ -10,13 +10,13 @@ public class SeamCarver {
 
     private Picture picture;
     private double[][] energy;
-    private boolean energyAlreadyCalc;
+    private boolean energyAlreadyCalculated;
 
     // create a seam carver object based on the given picture
     public SeamCarver(Picture picture) {
         this.picture = new Picture(picture);
         energy = new double[picture.width()][picture.height()];
-        energyAlreadyCalc = false;
+        energyAlreadyCalculated = false;
     }
 
     // current picture
@@ -39,7 +39,7 @@ public class SeamCarver {
         validateX(x);
         validateY(y);
 
-        if (!energyAlreadyCalc)
+        if (!energyAlreadyCalculated)
             calcEnergy();
 
         return energy[x][y];
@@ -57,12 +57,19 @@ public class SeamCarver {
 
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam) {
-
+        if (seam == null)
+            throw new IllegalArgumentException("seam can not be null");
+        if (picture.width() == 1)
+            throw new IllegalArgumentException("can not remove this seam");
     }
 
     // remove vertical seam from current picture
     public void removeVerticalSeam(int[] seam) {
 
+        if (seam == null)
+            throw new IllegalArgumentException("seam can not be null");
+        if (picture.width() == 1)
+            throw new IllegalArgumentException("can not remove this seam");
     }
 
     // helper functions for calculate the energy function
@@ -71,32 +78,53 @@ public class SeamCarver {
         // set corners energy
         cornersEnegy();
 
+        // calc normal energy for first time
         for (int x = 1; x < picture.width() - 1; x++) {
             for (int y = 1; y < picture.height() - 1; y++) {
                 energy[x][y] = Math.sqrt(calcGradSqX(x, y) + calcGradSqY(x, y));
             }
         }
         // update the flag for calculating the energy
-        energyAlreadyCalc = true;
+        energyAlreadyCalculated = true;
     }
 
     // recalculating energy function
     private void reCalcVerEnergy(int[] seam) {
         for (int y = 1; y < picture.height() - 1; y++) {
-            energy[seam[y - 1]][y] = Math.sqrt(calcGradSqX(seam[y - 1], y)
-                                                       + calcGradSqY(seam[y - 1], y));
-            energy[seam[y + 1]][y] = Math.sqrt(calcGradSqX(seam[y + 1], y)
-                                                       + calcGradSqY(seam[y + 1], y));
+
+            if (inCorner(seam[y] - 1, y))
+                energy[seam[y] - 1][y] = 1000.0;
+            else {
+                energy[seam[y] - 1][y] = Math.sqrt(calcGradSqX(seam[y] - 1, y)
+                                                           + calcGradSqY(seam[y] - 1, y));
+            }
+            if (inCorner(seam[y] + 1, y))
+                energy[seam[y] + 1][y] = 1000.0;
+            else {
+                energy[seam[y] + 1][y] = Math.sqrt(calcGradSqX(seam[y] + 1, y)
+                                                           + calcGradSqY(seam[y] + 1, y));
+            }
         }
+        energyAlreadyCalculated = true;
     }
 
     private void reCalcHorEnergy(int[] seam) {
         for (int x = 1; x < picture.width() - 1; x++) {
-            energy[x][seam[x - 1]] = Math.sqrt(calcGradSqX(x, seam[x - 1])
-                                                       + calcGradSqY(x, seam[x - 1]));
-            energy[x][seam[x + 1]] = Math.sqrt(calcGradSqX(x, seam[x + 1])
-                                                       + calcGradSqY(x, seam[x + 1]));
+
+            if (inCorner(x, seam[x] - 1))
+                energy[x][seam[x] - 1] = 1000.0;
+            else {
+                energy[x][seam[x] - 1] = Math.sqrt(calcGradSqX(x, seam[x] - 1)
+                                                           + calcGradSqY(x, seam[x] - 1));
+            }
+            if (inCorner(x, seam[x] - 1))
+                energy[x][seam[x] + 1] = 1000.0;
+            else {
+                energy[x][seam[x] + 1] = Math.sqrt(calcGradSqX(x, seam[x] + 1)
+                                                           + calcGradSqY(x, seam[x] + 1));
+            }
         }
+        energyAlreadyCalculated = true;
     }
 
     // get corners energy
@@ -157,6 +185,15 @@ public class SeamCarver {
     private void validateY(int y) {
         if (y < 0 || y >= picture.height())
             throw new IllegalArgumentException("y provided is illegal");
+    }
+
+    private boolean inCorner(int x, int y) {
+        if (x == 0 || x == picture.width() - 1)
+            return true;
+        if (y == 0 || y == picture.height() - 1)
+            return true;
+
+        return false;
     }
 
     //  unit testing (optional)
