@@ -8,7 +8,7 @@ public class ShortestPathTopologicalSort {
 
     private int width, height;
     private boolean orientation;
-    private double[][] energy;
+    private final double[][] energy;
 
     private double[][] disTo;
     private int[][] edgeTo;
@@ -23,7 +23,6 @@ public class ShortestPathTopologicalSort {
         this.height = energy[0].length;
         this.width = energy.length;
         this.energy = energy;
-        boolean tooSmall = false;
 
         disTo = new double[width][height];
         edgeTo = new int[width][height];
@@ -102,42 +101,25 @@ public class ShortestPathTopologicalSort {
                 x--;
             }
         }
-
         return path;
     }
 
     // relaxation
     private void relaxVer(int x, int y) {
-        if (disTo[x - 1][y + 1] > disTo[x][y] + energy[x - 1][y + 1]) {
-            disTo[x - 1][y + 1] = disTo[x][y] + energy[x - 1][y + 1];
-            edgeTo[x - 1][y + 1] = x;
-        }
-
-        if (disTo[x][y + 1] > disTo[x][y] + energy[x][y + 1]) {
-            disTo[x][y + 1] = disTo[x][y] + energy[x][y + 1];
-            edgeTo[x][y + 1] = x;
-        }
-
-        if (disTo[x + 1][y + 1] > disTo[x][y] + energy[x + 1][y + 1]) {
-            disTo[x + 1][y + 1] = disTo[x][y] + energy[x + 1][y + 1];
-            edgeTo[x + 1][y + 1] = x;
+        for (int xLocal = x - 1; xLocal <= x + 1; xLocal++) {
+            if (disTo[xLocal][y + 1] > disTo[x][y] + energy[xLocal][y + 1]) {
+                disTo[xLocal][y + 1] = disTo[x][y] + energy[xLocal][y + 1];
+                edgeTo[xLocal][y + 1] = x;
+            }
         }
     }
 
     private void relaxHor(int x, int y) {
-        if (disTo[x + 1][y - 1] > disTo[x][y] + energy[x + 1][y - 1]) {
-            disTo[x + 1][y - 1] = disTo[x][y] + energy[x + 1][y - 1];
-            edgeTo[x + 1][y - 1] = y;
-        }
-
-        if (disTo[x + 1][y] > disTo[x + 1][y] + energy[x + 1][y]) {
-            disTo[x + 1][y] = disTo[x + 1][y] + energy[x + 1][y];
-            edgeTo[x + 1][y] = y;
-        }
-
-        if (disTo[x + 1][y + 1] > disTo[x][y] + energy[x + 1][y + 1]) {
-            disTo[x + 1][y + 1] = disTo[x][y] + energy[x + 1][y + 1];
-            edgeTo[x + 1][y + 1] = y;
+        for (int yLocal = y - 1; yLocal <= y + 1; yLocal++) {
+            if (disTo[x + 1][yLocal] > disTo[x][y] + energy[x + 1][yLocal]) {
+                disTo[x + 1][yLocal] = disTo[x][y] + energy[x + 1][yLocal];
+                edgeTo[x + 1][yLocal] = y;
+            }
         }
     }
 }
