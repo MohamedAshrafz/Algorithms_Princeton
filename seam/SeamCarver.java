@@ -60,20 +60,16 @@ public class SeamCarver {
 
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam) {
-        if (seam == null)
-            throw new IllegalArgumentException("seam can not be null");
-        if (picture.width() == 1)
-            throw new IllegalArgumentException("can not remove this seam");
-        energyAlreadyCalculated = false;
-        reCalcHorEnergy(seam);
+
+        validateHorSeam(seam);
+
     }
 
     // remove vertical seam from current picture
     public void removeVerticalSeam(int[] seam) {
-        if (seam == null)
-            throw new IllegalArgumentException("seam can not be null");
-        if (picture.width() == 1)
-            throw new IllegalArgumentException("can not remove this seam");
+
+        validateVerSeam(seam);
+        
     }
 
     // helper functions for calculate the energy function
@@ -193,6 +189,50 @@ public class SeamCarver {
             throw new IllegalArgumentException("y provided is illegal");
     }
 
+    private void validateVerSeam(int[] seam) {
+        if (seam == null)
+            throw new IllegalArgumentException("seam can not be null");
+        if (picture.width() == 1)
+            throw new IllegalArgumentException("the picture is only one pixel in width");
+
+        if (seam.length != picture.width())
+            throw new IllegalArgumentException("invalid seam");
+
+        // seam in prescribed range
+        for (int y = 0; y < seam.length; y++) {
+            if (seam[y] <= 0 || seam[y] >= picture.width())
+                throw new IllegalArgumentException("invalid seam");
+        }
+
+        // no two entries differ by more than one
+        for (int y = 0; y < seam.length - 1; y++) {
+            if (Math.abs(seam[y + 1] - seam[y]) > 1)
+                throw new IllegalArgumentException("two entries differ by more than one");
+        }
+    }
+
+    private void validateHorSeam(int[] seam) {
+        if (seam == null)
+            throw new IllegalArgumentException("seam can not be null");
+        if (picture.height() == 1)
+            throw new IllegalArgumentException("the picture is only one pixel in height");
+
+        if (seam.length != picture.width())
+            throw new IllegalArgumentException("invalid seam");
+
+        // seam in prescribed range
+        for (int x = 0; x < seam.length; x++) {
+            if (seam[x] <= 0 || seam[x] >= picture.height())
+                throw new IllegalArgumentException("invalid seam");
+        }
+
+        // no two entries differ by more than one
+        for (int x = 0; x < seam.length - 1; x++) {
+            if (Math.abs(seam[x + 1] - seam[x]) > 1)
+                throw new IllegalArgumentException("two entries differ by more than one");
+        }
+    }
+
     private boolean inCorner(int x, int y) {
         if (x == 0 || x == picture.width() - 1)
             return true;
@@ -205,7 +245,8 @@ public class SeamCarver {
     //  unit testing (optional)
     public static void main(String[] args) {
         Picture picture = new Picture(args[0]);
-        StdOut.printf("image is %d pixels wide by %d pixels high.\n", picture.width(), picture.height());
+        StdOut.printf("image is %d pixels wide by %d pixels high.\n", picture.width(),
+                      picture.height());
 
         SeamCarver sc = new SeamCarver(picture);
 
