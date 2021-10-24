@@ -9,9 +9,13 @@ import edu.princeton.cs.algs4.StdOut;
 
 public class SeamCarver {
 
+    // data structure variables
     private Picture picture;
     private double[][] energy;
     private boolean energyAlreadyCalculated;
+
+    private static final boolean VERTICAL = true;
+    private static final boolean HORIZONTAL = false;
 
     // create a seam carver object based on the given picture
     public SeamCarver(Picture picture) {
@@ -50,12 +54,21 @@ public class SeamCarver {
 
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
-        return new int[2];
+        calcEnergy();
+
+        ShortestPathTopologicalSort spts = new ShortestPathTopologicalSort(energy, HORIZONTAL);
+
+        return spts.path();
     }
+
 
     // sequence of indices for vertical seam
     public int[] findVerticalSeam() {
-        return new int[2];
+        calcEnergy();
+
+        ShortestPathTopologicalSort spts = new ShortestPathTopologicalSort(energy, VERTICAL);
+
+        return spts.path();
     }
 
     // remove horizontal seam from current picture
@@ -69,12 +82,15 @@ public class SeamCarver {
     public void removeVerticalSeam(int[] seam) {
 
         validateVerSeam(seam);
-        
+
     }
 
     // helper functions for calculate the energy function
     // calculate energy for first time
     private void calcEnergy() {
+        if (energyAlreadyCalculated)
+            return;
+
         // set corners energy
         cornersEnegy();
 
@@ -269,6 +285,11 @@ public class SeamCarver {
                 StdOut.printf("%9.0f ", sc.energy(col, row));
             StdOut.println();
         }
+
+        int[] path = sc.findHorizontalSeam();
+
+        for (int i = 0; i < path.length; i++)
+            StdOut.print(path[i] + "\t");
     }
 
 }
