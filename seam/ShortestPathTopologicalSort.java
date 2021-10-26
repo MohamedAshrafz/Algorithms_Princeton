@@ -6,8 +6,7 @@
 
 public class ShortestPathTopologicalSort {
 
-    private int width, height;
-    private boolean orientation;
+    private final int width, height;
     private final double[][] energy;
 
     private double[][] disTo;
@@ -18,7 +17,7 @@ public class ShortestPathTopologicalSort {
     private static final boolean VERTICAL = true;
     private static final boolean HORIZONTAL = false;
 
-    public ShortestPathTopologicalSort(double[][] energy, boolean orientation) {
+    public ShortestPathTopologicalSort(double[][] energy) {
 
         this.height = energy[0].length;
         this.width = energy.length;
@@ -26,12 +25,16 @@ public class ShortestPathTopologicalSort {
 
         disTo = new double[width][height];
         edgeTo = new int[width][height];
-        this.orientation = orientation;
 
-        double shortestPathDistance = Integer.MAX_VALUE;
+    }
+
+    // fina horizontal or vertical path
+    public int[] findPath(boolean orientation) {
+
+        double shortestPathDistance = Double.POSITIVE_INFINITY;
+        int[] path;
 
         if (orientation == VERTICAL) {
-
             for (int x = 0; x < width; x++) {
                 disTo[x][0] = 0;
 
@@ -52,9 +55,7 @@ public class ShortestPathTopologicalSort {
                 }
             }
         }
-
-        if (orientation == HORIZONTAL) {
-
+        else {
             for (int y = 0; y < height; y++) {
                 disTo[0][y] = 0;
 
@@ -75,17 +76,14 @@ public class ShortestPathTopologicalSort {
                 }
             }
         }
-    }
 
-    public int[] path() {
-        int[] path;
         if (orientation == VERTICAL) {
             path = new int[height];
 
             path[height - 1] = shortestPathVertex;
 
             int y = height - 2;
-            while (y >= 0){
+            while (y >= 0) {
                 path[y] = edgeTo[path[y + 1]][y + 1];
                 y--;
             }
@@ -96,7 +94,7 @@ public class ShortestPathTopologicalSort {
             path[width - 1] = shortestPathVertex;
 
             int x = width - 2;
-            while (x >= 0){
+            while (x >= 0) {
                 path[x] = edgeTo[x + 1][path[x + 1]];
                 x--;
             }

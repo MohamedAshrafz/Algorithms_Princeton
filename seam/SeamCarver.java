@@ -5,7 +5,7 @@
  **************************************************************************** */
 
 import edu.princeton.cs.algs4.Picture;
-import edu.princeton.cs.algs4.StdOut;
+import edu.princeton.cs.algs4.StdIn;
 
 public class SeamCarver {
 
@@ -13,7 +13,7 @@ public class SeamCarver {
     private int[][] picArr;
     private int width, height;
     private double[][] energy;
-    private boolean energyAlreadyCalculated;
+    private boolean energyAlreadyCalculatedOnce;
     private boolean transposed;
 
     private static final boolean VERTICAL = true;
@@ -27,10 +27,11 @@ public class SeamCarver {
         this.width = picture.width();
         this.height = picture.height();
 
-        picArr = copyPicIntoArr(picture);
+        this.picArr = copyPicIntoArr(picture);
+
+        transposed = false;
 
         this.energy = new double[width][height];
-        transposed = false;
 
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
@@ -39,25 +40,39 @@ public class SeamCarver {
 
     // current picture
     public Picture picture() {
+
+        if (transposed)
+            transpose();
+
         return toPicture();
     }
 
     // width of current picture
     public int width() {
-        return width;
+        if (transposed)
+            return height;
+        else
+            return width;
     }
 
     // height of current picture
     public int height() {
-        return height;
+        if (transposed)
+            return width;
+        else
+            return height;
     }
 
     // energy of pixel at column x and row y
     public double energy(int x, int y) {
-        validateX(x);
-        validateY(y);
 
-        if (!energyAlreadyCalculated && energy[x][y] == -1)
+        if (transposed)
+            transpose();
+
+        if (!inPicture(x, y))
+            throw new IllegalArgumentException("not a valid point");
+
+        if (!energyAlreadyCalculatedOnce || energy[x][y] == -1)
             energy[x][y] = calcEnergyFor(x, y);
 
         return energy[x][y];
@@ -65,84 +80,62 @@ public class SeamCarver {
 
     // sequence of indices for horizontal seam
     public int[] findHorizontalSeam() {
-        if (!energyAlreadyCalculated)
+        if (!energyAlreadyCalculatedOnce)
             calcEnergy();
 
-        ShortestPathTopologicalSort spts = new ShortestPathTopologicalSort(energy, HORIZONTAL);
+        ShortestPathTopologicalSort spts = new ShortestPathTopologicalSort(energy);
 
-        return spts.path();
+        if (!transposed) {
+            return spts.findPath(HORIZONTAL);
+        }
+        else {
+            return spts.findPath(VERTICAL);
+        }
     }
 
 
     // sequence of indices for vertical seam
     public int[] findVerticalSeam() {
-        if (!energyAlreadyCalculated)
+        if (!energyAlreadyCalculatedOnce)
             calcEnergy();
 
-        ShortestPathTopologicalSort spts = new ShortestPathTopologicalSort(energy, VERTICAL);
+        ShortestPathTopologicalSort spts = new ShortestPathTopologicalSort(energy);
 
-        return spts.path();
+        if (!transposed) {
+            return spts.findPath(VERTICAL);
+        }
+        else {
+            return spts.findPath(HORIZONTAL);
+        }
     }
 
     // remove horizontal seam from current picture
     public void removeHorizontalSeam(int[] seam) {
 
-        validateHorSeam(seam);
-
-        height--;
-
-        int[][] picArrCopy = new int[width][height];
-
-        if (transposed)
-            transpose();
-        transposed = false;
-
-        for (int x = 0; x < width; x++) {
-            System.arraycopy(picArr[x], 0, picArrCopy[x], 0, seam[x]);
-            System.arraycopy(picArr[x], seam[x] + 1, picArrCopy[x], seam[x], height - seam[x]);
-        }
-
-        picArr = picArrCopy;
-        energyAlreadyCalculated = false;
-        reCalcHorEnergy(seam);
+        removeSeam(seam, HORIZONTAL);
     }
 
     // remove vertical seam from current picture
     public void removeVerticalSeam(int[] seam) {
 
-        validateVerSeam(seam);
-
-        width--;
-
-        int[][] picArrCopy = new int[height][width];
-
-        if (!transposed)
-            transpose();
-
-        for (int x = 0; x < width; x++) {
-            System.arraycopy(picArr[x], 0, picArrCopy[x], 0, seam[x]);
-            System.arraycopy(picArr[x], seam[x] + 1, picArrCopy[x], seam[x], height - seam[x]);
-        }
-
-        picArr = picArrCopy;
-        energyAlreadyCalculated = false;
-        reCalcHorEnergy(seam);
+        removeSeam(seam, VERTICAL);
     }
 
     // copy picture into int matrix
     private int[][] copyPicIntoArr(Picture picture) {
 
-        int[][] picArr = new int[width][height];
+        int[][] newPicArr = new int[width][height];
 
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
-                picArr[x][y] = picture.getRGB(x, y);
+                newPicArr[x][y] = picture.getRGB(x, y);
 
-        return picArr;
+        return newPicArr;
     }
 
     // int rgb matrix into picture
     private Picture toPicture() {
+
         Picture picture = new Picture(width, height);
         for (int x = 0; x < width; x++)
             for (int y = 0; y < height; y++)
@@ -153,20 +146,62 @@ public class SeamCarver {
 
     // transpose rgb matrix for vertical removal
     private void transpose() {
-        int[][] tempMatric = new int[height][width];
+
+        int[][] tempMatricPicture = new int[height][width];
+        double[][] tempMatricEnergy = new double[height][width];
 
         for (int x = 0; x < height; x++)
-            for (int y = 0; y < width; y++)
-                tempMatric[x][y] = picArr[y][x];
+            for (int y = 0; y < width; y++) {
+                tempMatricPicture[x][y] = picArr[y][x];
+                tempMatricEnergy[x][y] = energy[y][x];
+            }
 
-        picArr = tempMatric;
-        transposed = true;
+        int temp;
+        temp = width;
+        width = height;
+        height = temp;
+
+        picArr = tempMatricPicture;
+        energy = tempMatricEnergy;
+        transposed = !transposed;
+    }
+
+    // helper function for removal
+    private void removeSeam(int[] seam, boolean orientaion) {
+
+        if (!energyAlreadyCalculatedOnce){
+            calcEnergy();
+        }
+
+        if (orientaion == HORIZONTAL) {
+            if (transposed)
+                transpose();
+        }
+        else {
+            if (!transposed)
+                transpose();
+        }
+
+        // everything from now on is just horizontal seam
+        validateHorSeam(seam);
+
+        height--;
+
+        int[][] picArrCopy = new int[width][height];
+
+        for (int x = 0; x < width; x++) {
+            System.arraycopy(picArr[x], 0, picArrCopy[x], 0, seam[x]);
+            System.arraycopy(picArr[x], seam[x] + 1, picArrCopy[x], seam[x], height - seam[x]);
+        }
+
+        picArr = picArrCopy;
+        reCalcHorEnergy(seam);
     }
 
     // helper functions for calculate the energy function
     // calculate energy for entire picture first time
     private void calcEnergy() {
-        if (energyAlreadyCalculated)
+        if (energyAlreadyCalculatedOnce)
             return;
 
         // set corners energy
@@ -179,7 +214,7 @@ public class SeamCarver {
             }
         }
         // update the flag to already-calculated
-        energyAlreadyCalculated = true;
+        energyAlreadyCalculatedOnce = true;
     }
 
     private double calcEnergyFor(int x, int y) {
@@ -190,26 +225,6 @@ public class SeamCarver {
     }
 
     // recalculating energy function
-    private void reCalcVerEnergy(int[] seam) {
-        for (int y = 1; y < width - 1; y++) {
-
-            if (inCorner(seam[y] - 1, y))
-                energy[seam[y] - 1][y] = 1000.0;
-            else {
-                energy[seam[y] - 1][y] = Math.sqrt(calcGradSqX(seam[y] - 1, y)
-                                                           + calcGradSqY(seam[y] - 1, y));
-            }
-            if (inCorner(seam[y], y))
-                energy[seam[y]][y] = 1000.0;
-            else {
-                energy[seam[y]][y] = Math.sqrt(calcGradSqX(seam[y], y)
-                                                       + calcGradSqY(seam[y], y));
-            }
-        }
-        // update the flag to already-calculated
-        energyAlreadyCalculated = true;
-    }
-
     private void reCalcHorEnergy(int[] seam) {
 
         double[][] tempEnergy = new double[width][height];
@@ -221,23 +236,16 @@ public class SeamCarver {
 
         energy = tempEnergy;
 
-        for (int x = 1; x < width - 1; x++) {
+        for (int x = 0; x < width; x++) {
+            if (inPicture(x, seam[x] - 1)) {
 
-            if (inCorner(x, seam[x] - 1))
-                energy[x][seam[x] - 1] = 1000.0;
-            else {
-                energy[x][seam[x] - 1] = Math.sqrt(calcGradSqX(x, seam[x] - 1)
-                                                           + calcGradSqY(x, seam[x] - 1));
+                    energy[x][seam[x] - 1] = calcEnergyFor(x, seam[x] - 1);
             }
-            if (inCorner(x, seam[x]))
-                energy[x][seam[x]] = 1000.0;
-            else {
-                energy[x][seam[x]] = Math.sqrt(calcGradSqX(x, seam[x])
-                                                       + calcGradSqY(x, seam[x]));
+            if (inPicture(x, seam[x])) {
+
+                    energy[x][seam[x]] = calcEnergyFor(x, seam[x]);
             }
         }
-        // update the flag to already-calculated
-        energyAlreadyCalculated = true;
     }
 
     // get corners energy
@@ -255,78 +263,55 @@ public class SeamCarver {
 
     private double calcGradSqX(int x, int y) {
         // getting the colour of pixel x - 1
-        int rgb = picArr[x - 1][y];
+        int rgbNag = picArr[x - 1][y];
 
-        int rNeg = (rgb >> 16) & 0x00FF;
-        int gNeg = (rgb >> 8) & 0x00FF;
-        int bNeg = rgb & 0x00FF;
+        int rNeg = (rgbNag >> 16) & 0x00FF;
+        int gNeg = (rgbNag >> 8) & 0x00FF;
+        int bNeg = rgbNag & 0x00FF;
 
         // getting the colour of pixel x + 1
-        rgb = picArr[x + 1][y];
+        int rgbPos = picArr[x + 1][y];
 
-        int rPos = (rgb >> 16) & 0x00FF;
-        int gPos = (rgb >> 8) & 0x00FF;
-        int bPos = rgb & 0x00FF;
+        int rPos = (rgbPos >> 16) & 0x00FF;
+        int gPos = (rgbPos >> 8) & 0x00FF;
+        int bPos = rgbPos & 0x00FF;
 
         return Math.pow(rPos - rNeg, 2) + Math.pow(gPos - gNeg, 2) + Math.pow(bPos - bNeg, 2);
     }
 
     private double calcGradSqY(int x, int y) {
         // getting the colour of pixel y - 1
-        int rgb = picArr[x][y - 1];
+        int rgbNag = picArr[x][y - 1];
 
-        int rNeg = (rgb >> 16) & 0x00FF;
-        int gNeg = (rgb >> 8) & 0x00FF;
-        int bNeg = rgb & 0x00FF;
+        int rNeg = (rgbNag >> 16) & 0x00FF;
+        int gNeg = (rgbNag >> 8) & 0x00FF;
+        int bNeg = rgbNag & 0x00FF;
 
         // getting the colour of pixel y + 1
-        rgb = picArr[x][y + 1];
+        int rgbPos = picArr[x][y + 1];
 
-        int rPos = (rgb >> 16) & 0x00FF;
-        int gPos = (rgb >> 8) & 0x00FF;
-        int bPos = rgb & 0x00FF;
+        int rPos = (rgbPos >> 16) & 0x00FF;
+        int gPos = (rgbPos >> 8) & 0x00FF;
+        int bPos = rgbPos & 0x00FF;
 
         return Math.pow(rPos - rNeg, 2) + Math.pow(gPos - gNeg, 2) + Math.pow(bPos - bNeg, 2);
     }
 
     // validation
-    private void validateX(int x) {
+    private boolean inPicture(int x, int y) {
         if (x < 0 || x >= width)
-            throw new IllegalArgumentException("x provided is illegal");
-    }
-
-    private void validateY(int y) {
+            return false;
         if (y < 0 || y >= height)
-            throw new IllegalArgumentException("y provided is illegal");
-    }
+            return false;
 
-    private void validateVerSeam(int[] seam) {
-        if (seam == null)
-            throw new IllegalArgumentException("seam can not be null");
-        if (width == 1)
-            throw new IllegalArgumentException("the picture is only one pixel in width");
-
-        if (seam.length != width)
-            throw new IllegalArgumentException("invalid seam in size");
-
-        // seam in prescribed range
-        for (int y = 0; y < seam.length; y++) {
-            if (seam[y] < 0 || seam[y] >= width)
-                throw new IllegalArgumentException("invalid seam in range");
-        }
-
-        // no two entries differ by more than one
-        for (int y = 0; y < seam.length - 1; y++) {
-            if (Math.abs(seam[y + 1] - seam[y]) > 1)
-                throw new IllegalArgumentException("two entries differ by more than one");
-        }
+        return true;
     }
 
     private void validateHorSeam(int[] seam) {
         if (seam == null)
             throw new IllegalArgumentException("seam can not be null");
         if (height == 1)
-            throw new IllegalArgumentException("the picture is only one pixel in height");
+            throw new IllegalArgumentException("the picture is only one pixel");
 
         if (seam.length != width)
             throw new IllegalArgumentException("invalid seam in size");
@@ -357,36 +342,32 @@ public class SeamCarver {
 
     //  unit testing (optional)
     public static void main(String[] args) {
-        Picture picture = new Picture(args[0]);
-        StdOut.printf("image is %d pixels wide by %d pixels high.\n", picture.width(),
-                      picture.height());
 
-        SeamCarver sc = new SeamCarver(picture);
+        int height = 6, width = 6;
 
-        StdOut.printf("Printing energy calculated for each pixel.\n");
+        int[][] arr = new int[width][height];
 
-        for (int row = 0; row < sc.height(); row++) {
-            for (int col = 0; col < sc.width(); col++)
-                StdOut.printf("%9.0f ", sc.energy(col, row));
-            StdOut.println();
+        for (int i = 0; i < height; i++) {
+            for (int j = 0; j < width; j++) {
+                arr[j][i] = Integer.parseInt(StdIn.readString(), 16);
+            }
         }
 
-        int[] seam = { 2, 2, 1, 2, 1, 2 };
-        sc.reCalcHorEnergy(seam);
+        Picture picture = new Picture(width, height);
+        for (int x = 0; x < width; x++)
+            for (int y = 0; y < height; y++)
+                picture.setRGB(x, y, arr[x][y]);
 
-        StdOut.println();
-        StdOut.println();
-        StdOut.printf("Printing energy calculated for each pixel.\n");
-        for (int row = 0; row < sc.height(); row++) {
-            for (int col = 0; col < sc.width(); col++)
-                StdOut.printf("%9.0f ", sc.energy(col, row));
-            StdOut.println();
-        }
+        SeamCarver carver = new SeamCarver(picture);
+        int[] arr1 = { 3, 3, 3, 4, 3, 3 };
+        carver.removeVerticalSeam(arr1);
+        int[] arr2 = {0, 0, 0, 0, 0, 0};
+        carver.removeVerticalSeam(arr2);
+        int[] arr3 = {0, 0, 0, 1};
+        carver.removeHorizontalSeam(arr3);
+        int [] arr4 = carver.findVerticalSeam();
 
-        int[] path = sc.findHorizontalSeam();
-
-        for (int i = 0; i < path.length; i++)
-            StdOut.print(path[i] + "\t");
     }
+
 
 }
