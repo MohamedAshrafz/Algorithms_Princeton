@@ -44,19 +44,25 @@ struct compareArrival {
 	}
 } myobj2;
 
-vector <TimeSlot> SJFPreemptive(vector<process> processes);
+struct comparePriority {
+	bool operator() (process const& a, process const& b) const {
+		return a.priority > b.priority;
+	}
+} myobj3;
+
+vector <TimeSlot> PriorityPreemptive(vector<process> processes);
 
 int main() {
 
 	vector<process> processes;
 
-	processes.push_back(process(1, 0.5, 1));
-	processes.push_back(process(2, 1, 1));
-	processes.push_back(process(3, 2, 2));
-	processes.push_back(process(4, 0, 10));
-	processes.push_back(process(5, 3, 5));
+	processes.push_back(process(1, 0.5, 1, 0));
+	processes.push_back(process(2, 1, 1, 4));
+	processes.push_back(process(3, 2, 2, 3));
+	processes.push_back(process(4, 0, 10, 1));
+	processes.push_back(process(5, 3, 5, 2));
 
-	vector <TimeSlot> vecTS = SJFPreemptive(processes);
+	vector <TimeSlot> vecTS = PriorityPreemptive(processes);
 
 	cout << "process ID" << "\t" << "start" << "\t" << "end" << endl;
 	for (TimeSlot ts : vecTS)
@@ -66,9 +72,9 @@ int main() {
 	return 0;
 }
 
-vector <TimeSlot> SJFPreemptive(vector <process> processes) {
+vector <TimeSlot> PriorityPreemptive(vector <process> processes) {
 	sort(processes.begin(), processes.end(), myobj2);
-	priority_queue<process, vector<process>, compareBurst> pqProcesses;
+	priority_queue<process, vector<process>, comparePriority> pqProcesses;
 	vector<TimeSlot> vecTS;
 
 	size_t i = 0;
