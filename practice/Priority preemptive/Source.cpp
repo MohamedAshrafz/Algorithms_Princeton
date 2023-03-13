@@ -32,12 +32,6 @@ ostream& operator<<(ostream& os, TimeSlot& ts) {
 	return os;
 }
 
-struct compareBurst {
-	bool operator() (process const& a, process const& b) const {
-		return a.burst > b.burst;
-	}
-} myobj1;
-
 struct compareArrival {
 	bool operator() (process const& a, process const& b) const {
 		return a.arrival < b.arrival;
@@ -56,10 +50,10 @@ int main() {
 
 	vector<process> processes;
 
-	processes.push_back(process(1, 0.5, 1, 0));
-	processes.push_back(process(2, 1, 1, 4));
+	processes.push_back(process(1, 0.5, 10, 3));
+	processes.push_back(process(2, 1, 1, 1));
 	processes.push_back(process(3, 2, 2, 3));
-	processes.push_back(process(4, 0, 10, 1));
+	processes.push_back(process(4, 0, 1, 4));
 	processes.push_back(process(5, 3, 5, 2));
 
 	vector <TimeSlot> vecTS = PriorityPreemptive(processes);
